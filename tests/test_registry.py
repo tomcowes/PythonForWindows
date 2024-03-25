@@ -3,16 +3,16 @@ import datetime
 import pytest
 from .pfwtest import *
 
-import windows
+import pfw_windows
 
 
 testbasekeypath = r"HKEY_CURRENT_USER\SOFTWARE\PythonForWindows\Test"
-basekeytest = windows.system.registry(testbasekeypath, gdef.KEY_WOW64_64KEY | gdef.KEY_ALL_ACCESS)
+basekeytest = pfw_windows.system.registry(testbasekeypath, gdef.KEY_WOW64_64KEY | gdef.KEY_ALL_ACCESS)
 
 if not basekeytest.exists:
     basekeytest.create()
 
-if windows.pycompat.is_py3:
+if pfw_windows.pycompat.is_py3:
     REG_TEST_BINARY_DATA = b"BIN_DATA\x01\x02\x03\x00" + bytes(range(256))
 else:
     REG_TEST_BINARY_DATA = "BIN_DATA\x01\x02\x03\x00" + "".join(chr(i) for i in range(256))
@@ -67,8 +67,8 @@ def test_registry_set_get_simple_values_with_types(value, type):
 def test_registry_badly_encoded_values(value, type):
     # Bypass any encoding logic to setup bad key
     keyname = "bad_encoding"
-    buffer = windows.utils.BUFFER(gdef.BYTE).from_buffer_copy(value)
-    windows.winproxy.RegSetValueExW(basekeytest.phkey, keyname, 0, type, buffer, len(buffer))
+    buffer = pfw_windows.utils.BUFFER(gdef.BYTE).from_buffer_copy(value)
+    pfw_windows.winproxy.RegSetValueExW(basekeytest.phkey, keyname, 0, type, buffer, len(buffer))
     # Not the best decoded value
     # But should not crash
     assert basekeytest[keyname]
@@ -142,7 +142,7 @@ def test_registry_get_key_info():
     other_info = subkey.info
     assert other_info[0] == 0 # Nb subkeys
     assert other_info[1] == 2 # Nb values
-    assert isinstance(other_info[2], windows.pycompat.int_types) # Last write
+    assert isinstance(other_info[2], pfw_windows.pycompat.int_types) # Last write
 
 def test_registry_key_empty():
     subname = "MyTestKeyEmpty"
@@ -214,7 +214,7 @@ def test_registry_unicode_value_name_enumerate_with_race_condition(monkeypatch):
         subkey.delete()
 
 def test_registry_unicode_subkeys_create_delete():
-    if windows.pycompat.is_py3:
+    if pfw_windows.pycompat.is_py3:
         subname =  UNICODE_RU_STRING + str(datetime.datetime.now())
     else:
         subname =  UNICODE_RU_STRING + unicode(datetime.datetime.now())
@@ -235,12 +235,12 @@ def test_registry_unicode_subkeys_enumerate():
     assert name1 in subkey_names
     assert name2 in subkey_names
 
-original_RegEnumValueW = windows.winproxy.RegEnumValueW
+original_RegEnumValueW = pfw_windows.winproxy.RegEnumValueW
 
 def fake_RegEnumValueW_fill_but_raise(hKey, dwIndex, lpValueName, lpcchValueName, lpReserved, lpType, lpData, lpcbData):
     print("fake_RegEnumValueW")
     result = original_RegEnumValueW(hKey, dwIndex, lpValueName, lpcchValueName, lpReserved, lpType, lpData, lpcbData)
-    raise windows.winproxy.WinproxyError("fake_RegEnumValueW", gdef.ERROR_MORE_DATA)
+    raise pfw_windows.winproxy.WinproxyError("fake_RegEnumValueW", gdef.ERROR_MORE_DATA)
     return result
 
 def test_registry_win_bug_RegEnumValueW_1(monkeypatch):
@@ -250,14 +250,14 @@ def test_registry_win_bug_RegEnumValueW_1(monkeypatch):
     basekeytest["VALUE_2"] = 42
     basekeytest["XXX" * 0x100] = 42
     assert set(x.name for x in basekeytest.values) == {"VALUE_1", "VALUE_2", "XXX" * 0x100}
-    monkeypatch.setattr(windows.winproxy, "RegEnumValueW", fake_RegEnumValueW_fill_but_raise)
+    monkeypatch.setattr(pfw_windows.winproxy, "RegEnumValueW", fake_RegEnumValueW_fill_but_raise)
     # Bug make it hang here..
     assert set(x.name for x in basekeytest.values) == {"VALUE_1", "VALUE_2", "XXX" * 0x100}
     print("LOL")
 
 def fake_RegEnumValueW_always_raise(hKey, dwIndex, lpValueName, lpcchValueName, lpReserved, lpType, lpData, lpcbData):
     print("fake_RegEnumValueW_always_raise")
-    raise windows.winproxy.WinproxyError("fake_RegEnumValueW", gdef.ERROR_MORE_DATA)
+    raise pfw_windows.winproxy.WinproxyError("fake_RegEnumValueW", gdef.ERROR_MORE_DATA)
 
 def test_registry_win_bug_RegEnumValueW_2(monkeypatch):
     # Found a bug on some computers where RegEnumValueW would fill the data but also ERROR_MORE_DATA
@@ -266,7 +266,7 @@ def test_registry_win_bug_RegEnumValueW_2(monkeypatch):
     basekeytest["VALUE_2"] = 42
     basekeytest["XXX" * 0x100] = 42
     assert set(x.name for x in basekeytest.values) == {"VALUE_1", "VALUE_2", "XXX" * 0x100}
-    monkeypatch.setattr(windows.winproxy, "RegEnumValueW", fake_RegEnumValueW_always_raise)
+    monkeypatch.setattr(pfw_windows.winproxy, "RegEnumValueW", fake_RegEnumValueW_always_raise)
     # Bug make it hang here..
     with pytest.raises(ValueError):
         # A bug that do not allow is to extract the values will raises to be explicit..

@@ -3,14 +3,14 @@ import os.path
 import pprint
 sys.path.append(os.path.abspath(__file__ + "\..\.."))
 
-import windows
-import windows.test
-import windows.debug
+import pfw_windows
+import pfw_windows.test
+import pfw_windows.debug
 
-from windows.generated_def.winstructs import *
+from pfw_windows.generated_def.winstructs import *
 
-class FollowNtCreateFile(windows.debug.FunctionBP):
-    TARGET = windows.winproxy.NtCreateFile
+class FollowNtCreateFile(pfw_windows.debug.FunctionBP):
+    TARGET = pfw_windows.winproxy.NtCreateFile
     COUNTER = 3
 
     def trigger(self, dbg, exc):
@@ -33,7 +33,7 @@ class FollowNtCreateFile(windows.debug.FunctionBP):
             return
         print("NtCreateFile of <{0}>: handle = {1:#x}".format(filename, handle_value))
         # Manual verification
-        fhandle = [h for h in windows.system.handles if h.dwProcessId == dbg.current_process.pid and h.wValue == handle_value]
+        fhandle = [h for h in pfw_windows.system.handles if h.dwProcessId == dbg.current_process.pid and h.wValue == handle_value]
         if not fhandle:
             raise ValueError("handle not found!")
         fhandle = fhandle[0]
@@ -42,7 +42,7 @@ class FollowNtCreateFile(windows.debug.FunctionBP):
         self.COUNTER -= 1
 
 if __name__ == "__main__":
-    calc = windows.test.pop_proc_32(dwCreationFlags=DEBUG_PROCESS)
-    d = windows.debug.Debugger(calc)
+    calc = pfw_windows.test.pop_proc_32(dwCreationFlags=DEBUG_PROCESS)
+    d = pfw_windows.debug.Debugger(calc)
     d.add_bp(FollowNtCreateFile())
     d.loop()

@@ -1,7 +1,7 @@
 import argparse
 
-import windows
-import windows.generated_def as gdef
+import pfw_windows
+import pfw_windows.generated_def as gdef
 
 def obj_with_link(obj):
     target = obj.target
@@ -28,7 +28,7 @@ parser = argparse.ArgumentParser(prog=__file__)
 parser.add_argument('name', nargs='?', default="ls", help='The name of the object to find')
 res = parser.parse_args()
 
-objmanag = windows.system.object_manager
+objmanag = pfw_windows.system.object_manager
 print("Looking for object name containing <{0}>".format(res.name))
 find_name(objmanag.root, res.name)
 

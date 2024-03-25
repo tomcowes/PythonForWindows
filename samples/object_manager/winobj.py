@@ -1,7 +1,7 @@
 import argparse
 
-import windows
-import windows.generated_def as gdef
+import pfw_windows
+import pfw_windows.generated_def as gdef
 
 def obj_with_link(obj):
     target = obj.target
@@ -19,4 +19,4 @@ def fulllistdir(dir, depth=0):
                 print("{0} * {1}".format(" " * (depth + 4), e))
 
 
-fulllistdir(windows.system.object_manager.root)
+fulllistdir(pfw_windows.system.object_manager.root)

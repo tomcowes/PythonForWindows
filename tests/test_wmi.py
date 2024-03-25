@@ -1,8 +1,8 @@
 import pytest
 
-import windows
-import windows.generated_def as gdef
-from windows.pycompat import basestring
+import pfw_windows
+import pfw_windows.generated_def as gdef
+from pfw_windows.pycompat import basestring
 
 from .pfwtest import *
 
@@ -20,13 +20,13 @@ pytestmark = pytest.mark.usefixtures("init_com_security")
     ("root\\subscription", "__EventFilter"),
     ])
 def test_wmimanager_getnamespace(name, expected_cls):
-    namespace = windows.system.wmi[name]
+    namespace = pfw_windows.system.wmi[name]
     assert namespace.name == name
     assert namespace.get_object(expected_cls)
 
 
 def test_wmimanager_subnamespaces():
-    subnamespaces = windows.system.wmi.get_subnamespaces("root")
+    subnamespaces = pfw_windows.system.wmi.get_subnamespaces("root")
     subnamespaces = [x.lower() for x in subnamespaces]
     assert "cimv2" in subnamespaces
     assert "security" in subnamespaces
@@ -39,20 +39,20 @@ def test_wmimanager_subnamespaces():
     ("root\\subscription", "select * from __EventFilter"),
     ])
 def test_query_select(name, query):
-    namespace = windows.system.wmi[name]
+    namespace = pfw_windows.system.wmi[name]
     x = namespace.query(query)
     assert x
     assert isinstance(x, list)
 
 
 def test_bad_query_raise():
-    namespace = windows.system.wmi["root\\cimv2"]
+    namespace = pfw_windows.system.wmi["root\\cimv2"]
     with pytest.raises(WindowsError) as e:
         x = namespace.query("BADSELECT QUERY BAD")
     assert (e.value.winerror & 0xffffffff) == gdef.WBEM_E_INVALID_QUERY
 
 def test_create_class_enum():
-    namespace = windows.system.wmi["root\\cimv2"]
+    namespace = pfw_windows.system.wmi["root\\cimv2"]
     enum = namespace.create_class_enum(None)
     assert enum
     classes = list(enum)
@@ -66,7 +66,7 @@ def test_create_class_enum():
     ("root\\subscription", "__EventFilter"),
     ])
 def test_get_object(name, cls):
-    namespace = windows.system.wmi[name]
+    namespace = pfw_windows.system.wmi[name]
     assert namespace.name == name
     obj = namespace.get_object(cls)
     assert obj["__CLASS"] == cls
@@ -77,7 +77,7 @@ def test_get_object(name, cls):
 
 @pytest.mark.parametrize("cmdline", [r"c:\windows\notepad.exe trolol.exe"])
 def test_exec_method_Win32_Process_create(cmdline):
-    namespace = windows.system.wmi["root\\cimv2"]
+    namespace = pfw_windows.system.wmi["root\\cimv2"]
     win32_process_cls = namespace.get_object("Win32_Process")
     inparam = win32_process_cls.get_method("Create").inparam.spawn_instance()
     inparam["CommandLine"] = cmdline
@@ -85,14 +85,14 @@ def test_exec_method_Win32_Process_create(cmdline):
     assert result
     assert not result["ReturnValue"]
     assert result["ProcessId"]
-    proc = windows.WinProcess(pid=result["ProcessId"])
+    proc = pfw_windows.WinProcess(pid=result["ProcessId"])
     assert proc.peb.commandline.str == cmdline
     proc.exit(0)
 
 
 ## Test enum
 def test_enumeration_iteration_no_timeout():
-    namespace = windows.system.wmi["root\\cimv2"]
+    namespace = pfw_windows.system.wmi["root\\cimv2"]
     processes = namespace.exec_query("select * from Win32_Process").all()
     assert isinstance(processes, list)
     assert processes
@@ -104,7 +104,7 @@ def test_enumeration_iteration_no_timeout():
     assert proc["__CLASS"].lower() == "win32_process"
 
 def test_enumeration_iteration_timeout():
-    namespace = windows.system.wmi["root\\cimv2"]
+    namespace = pfw_windows.system.wmi["root\\cimv2"]
     timegen = namespace.exec_query("select * from Win32_Process").iter_timeout(0)
     # Iter on Win32_Process should not be immediat
     # so itering on timegen should trigger a timeout
@@ -117,7 +117,7 @@ def test_enumeration_iteration_timeout():
 def wmi_cls():
     # Test expect the cls to have a "Name" attribute & "Create" method
     # Maybe doing something more generic
-    namespace = windows.system.wmi["root\\cimv2"]
+    namespace = pfw_windows.system.wmi["root\\cimv2"]
     yield namespace.get_object("Win32_Process")
 
 def test_wmiobject_spawn(wmi_cls):

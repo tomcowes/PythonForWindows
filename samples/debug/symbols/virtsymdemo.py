@@ -1,7 +1,7 @@
 import os
-import windows
-import windows.generated_def as gdef
-from windows.debug import symbols
+import pfw_windows
+import pfw_windows.generated_def as gdef
+from pfw_windows.debug import symbols
 import argparse
 
 

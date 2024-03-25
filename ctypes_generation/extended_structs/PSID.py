@@ -2,19 +2,19 @@ _INITIAL_PSID = PSID
 class PSID(_INITIAL_PSID): # _INITIAL_PSID -> PVOID
 
     def __eq__(self, other):
-        return bool(windows.winproxy.EqualSid(self, other))
+        return bool(pfw_windows.winproxy.EqualSid(self, other))
 
     def __ne__(self, other):
-        return not windows.winproxy.EqualSid(self, other)
+        return not pfw_windows.winproxy.EqualSid(self, other)
 
     @property
     def size(self):
-        return windows.winproxy.GetLengthSid(self)
+        return pfw_windows.winproxy.GetLengthSid(self)
 
     def duplicate(self):
         size = self.size
         buffer = ctypes.c_buffer(size)
-        windows.winproxy.CopySid(size, buffer, self)
+        pfw_windows.winproxy.CopySid(size, buffer, self)
         return ctypes.cast(buffer, type(self))
 
     @classmethod
@@ -23,14 +23,14 @@ class PSID(_INITIAL_PSID): # _INITIAL_PSID -> PVOID
         if not isinstance(strsid, bytes):
             strsid = strsid.encode("ascii")
         # Pass to ConvertStringSidToSidW ?
-        windows.winproxy.ConvertStringSidToSidA(strsid, self)
+        pfw_windows.winproxy.ConvertStringSidToSidA(strsid, self)
         return self
 
     def to_string(self):
        sid_str  = LPCSTR()
-       windows.winproxy.ConvertSidToStringSidA(self, sid_str)
+       pfw_windows.winproxy.ConvertSidToStringSidA(self, sid_str)
        result = sid_str.value.decode("ascii") # ConvertSidToStringSidW ?
-       windows.winproxy.LocalFree(sid_str)
+       pfw_windows.winproxy.LocalFree(sid_str)
        return result
 
     __str__ = to_string

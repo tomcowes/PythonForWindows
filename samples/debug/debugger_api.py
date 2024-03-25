@@ -3,13 +3,13 @@ import os.path
 import pprint
 sys.path.append(os.path.abspath(__file__ + "\..\.."))
 
-import windows
-import windows.test
-import windows.debug
+import pfw_windows
+import pfw_windows.test
+import pfw_windows.debug
 
-from windows.generated_def.winstructs import *
+from pfw_windows.generated_def.winstructs import *
 
-class MyDebugger(windows.debug.Debugger):
+class MyDebugger(pfw_windows.debug.Debugger):
     def __init__(self, *args, **kwargs):
         super(MyDebugger, self).__init__(*args, **kwargs)
         self.struct_already_dump = set()
@@ -17,7 +17,7 @@ class MyDebugger(windows.debug.Debugger):
     def dump_struct_once(self, struct, name):
         if name in self.struct_already_dump:
             return
-        windows.utils.print_ctypes_struct(struct, name, hexa=True)
+        pfw_windows.utils.print_ctypes_struct(struct, name, hexa=True)
         self.struct_already_dump.add(name)
 
     def on_exception(self, exception):
@@ -71,6 +71,6 @@ class MyDebugger(windows.debug.Debugger):
         pass
 
 
-calc = windows.test.pop_proc_32(dwCreationFlags=DEBUG_PROCESS)
+calc = pfw_windows.test.pop_proc_32(dwCreationFlags=DEBUG_PROCESS)
 d = MyDebugger(calc)
 d.loop()

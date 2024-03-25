@@ -1,6 +1,6 @@
 import pytest
-import windows
-import windows.remotectypes as rctypes
+import pfw_windows
+import pfw_windows.remotectypes as rctypes
 import ctypes
 import json
 
@@ -9,16 +9,16 @@ from .pfwtest import *
 def assert_struct_offset(struct, field, offset):
     assert getattr(struct, field).offset == offset
 
-if windows.current_process.bitness == 32:
-    PEB32 = windows.generated_def.PEB
-    PEB64 = rctypes.transform_type_to_remote64bits(windows.generated_def.PEB)
-    SYSTEM_PROCESS_INFORMATION32 = windows.generated_def.SYSTEM_PROCESS_INFORMATION
-    SYSTEM_PROCESS_INFORMATION64 = rctypes.transform_type_to_remote64bits(windows.generated_def.SYSTEM_PROCESS_INFORMATION)
+if pfw_windows.current_process.bitness == 32:
+    PEB32 = pfw_windows.generated_def.PEB
+    PEB64 = rctypes.transform_type_to_remote64bits(pfw_windows.generated_def.PEB)
+    SYSTEM_PROCESS_INFORMATION32 = pfw_windows.generated_def.SYSTEM_PROCESS_INFORMATION
+    SYSTEM_PROCESS_INFORMATION64 = rctypes.transform_type_to_remote64bits(pfw_windows.generated_def.SYSTEM_PROCESS_INFORMATION)
 else:
-    PEB32 = rctypes.transform_type_to_remote32bits(windows.generated_def.PEB)
-    PEB64 = windows.generated_def.PEB
-    SYSTEM_PROCESS_INFORMATION32 = rctypes.transform_type_to_remote32bits(windows.generated_def.SYSTEM_PROCESS_INFORMATION)
-    SYSTEM_PROCESS_INFORMATION64 = windows.generated_def.SYSTEM_PROCESS_INFORMATION
+    PEB32 = rctypes.transform_type_to_remote32bits(pfw_windows.generated_def.PEB)
+    PEB64 = pfw_windows.generated_def.PEB
+    SYSTEM_PROCESS_INFORMATION32 = rctypes.transform_type_to_remote32bits(pfw_windows.generated_def.SYSTEM_PROCESS_INFORMATION)
+    SYSTEM_PROCESS_INFORMATION64 = pfw_windows.generated_def.SYSTEM_PROCESS_INFORMATION
 
 def test_peb32_fields():
     assert_peb_offset = lambda field, offset: assert_struct_offset(PEB32, field, offset)
@@ -98,8 +98,8 @@ def test_system_process_information64_fields():
 
 
 def test_cs_custom_define():
-    assert windows.generated_def.CS_USER_32B == 0x23
-    assert windows.generated_def.CS_USER_64B == 0x33
+    assert pfw_windows.generated_def.CS_USER_32B == 0x23
+    assert pfw_windows.generated_def.CS_USER_64B == 0x33
 
 # typedef struct _DnsRecordFlags
 # {

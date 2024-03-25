@@ -2,8 +2,8 @@ import pytest
 import threading
 import time
 
-import windows.alpc
-import windows.generated_def as gdef
+import pfw_windows.alpc
+import pfw_windows.generated_def as gdef
 
 from .pfwtest import *
 
@@ -21,13 +21,13 @@ def generate_client_server_test(client_function, server_function):
 PORT_NAME = r"\RPC Control\PythonForWindowsTestPort"
 CLIENT_MESSAGE = b"Message 1\x00\xffABCD"
 
-if windows.pycompat.is_py3:
+if pfw_windows.pycompat.is_py3:
     SERVER_MESSAGE = b"Message 2-" + bytes(range(256))
 else:
     SERVER_MESSAGE = "Message 2-" + "".join(chr(i) for i in range(256))
 
 def alpc_simple_test_server():
-    server = windows.alpc.AlpcServer(PORT_NAME)
+    server = pfw_windows.alpc.AlpcServer(PORT_NAME)
     msg = server.recv()
     assert msg.type & 0xfff  == gdef.LPC_CONNECTION_REQUEST
     server.accept_connection(msg)
@@ -38,7 +38,7 @@ def alpc_simple_test_server():
     server.send(msg)
 
 def alpc_simple_test_client():
-    client = windows.alpc.AlpcClient(PORT_NAME)
+    client = pfw_windows.alpc.AlpcClient(PORT_NAME)
     response = client.send_receive(CLIENT_MESSAGE)
     assert response.data == SERVER_MESSAGE
 
@@ -51,33 +51,33 @@ def send_message_with_view(client, message_data, view_data):
     view = client.map_section(section[0], 0x4000)
 
     # New message with a View
-    msg = windows.alpc.AlpcMessage(0x2000)
+    msg = pfw_windows.alpc.AlpcMessage(0x2000)
     msg.attributes.ValidAttributes |= gdef.ALPC_MESSAGE_VIEW_ATTRIBUTE
     msg.view_attribute.Flags = 0
     msg.view_attribute.ViewBase = view.ViewBase
     msg.view_attribute.SectionHandle = view.SectionHandle
     msg.view_attribute.ViewSize = 0x4000
     msg.data = message_data
-    windows.current_process.write_memory(view.ViewBase, view_data)
+    pfw_windows.current_process.write_memory(view.ViewBase, view_data)
     return client.send_receive(msg)
 
 
 CLIENT_VIEW_MESSAGE = b"Message 1\x00\xffABCD"
-if windows.pycompat.is_py3:
+if pfw_windows.pycompat.is_py3:
     CLIENT_VIEW_DATA = b"Message Data-view" + bytes(range(256))
 else:
     CLIENT_VIEW_DATA = "Message Data-view" + "".join(chr(i) for i in range(256))
 
 
 def alpc_view_test_server():
-    server = windows.alpc.AlpcServer(PORT_NAME)
+    server = pfw_windows.alpc.AlpcServer(PORT_NAME)
     msg = server.recv()
     assert msg.type & 0xfff  == gdef.LPC_CONNECTION_REQUEST
     server.accept_connection(msg)
     msg = server.recv()
     assert msg.type & 0xfff  == gdef.LPC_REQUEST
     assert msg.view_is_valid
-    view_data = windows.current_process.read_memory(msg.view_attribute.ViewBase, len(CLIENT_VIEW_DATA))
+    view_data = pfw_windows.current_process.read_memory(msg.view_attribute.ViewBase, len(CLIENT_VIEW_DATA))
     msg.attributes.ValidAttributes -= gdef.ALPC_MESSAGE_VIEW_ATTRIBUTE
     assert view_data == CLIENT_VIEW_DATA
     assert msg.data == CLIENT_VIEW_MESSAGE
@@ -85,7 +85,7 @@ def alpc_view_test_server():
     server.send(msg)
 
 def alpc_view_test_client():
-    client = windows.alpc.AlpcClient(PORT_NAME)
+    client = pfw_windows.alpc.AlpcClient(PORT_NAME)
     response = send_message_with_view(client, CLIENT_VIEW_MESSAGE, CLIENT_VIEW_DATA)
     assert response.data == SERVER_MESSAGE
 

@@ -1,5 +1,5 @@
-import windows.security
-from windows.security import SecurityDescriptor
+import pfw_windows.security
+from pfw_windows.security import SecurityDescriptor
 from .pfwtest import *
 import ctypes
 

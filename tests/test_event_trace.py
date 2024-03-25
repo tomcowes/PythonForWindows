@@ -1,8 +1,8 @@
 import collections
 import os
 
-import windows
-import windows.generated_def as gdef
+import pfw_windows
+import pfw_windows.generated_def as gdef
 
 
 TASK_SCHEDULER_PROVIDER = "047311A9-FA52-4A68-A1E4-4E289FBB8D17"
@@ -14,16 +14,16 @@ def show(event):
 
 
 def test_etw_trace_open_with_guid():
-    trace = windows.system.etw.open_trace("PFW_test_etw_1", guid="42424242-4242-4242-4242-000000001234")
+    trace = pfw_windows.system.etw.open_trace("PFW_test_etw_1", guid="42424242-4242-4242-4242-000000001234")
 
 def test_etw_trace_registration_and_processing():
     EVENT_ID_COUNT.clear()
     # RealTime Test
-    trace = windows.system.etw.open_trace("PFW_test_etw_2", logfile="pfw_test_trace.etl")
+    trace = pfw_windows.system.etw.open_trace("PFW_test_etw_2", logfile="pfw_test_trace.etl")
     trace.start()
     trace.enable(TASK_SCHEDULER_PROVIDER, 0xff, 0xff)
     # Scheduler code that generate event
-    windows.system.task_scheduler(r"\Microsoft\Windows\Chkdsk")["SyspartRepair"]
+    pfw_windows.system.task_scheduler(r"\Microsoft\Windows\Chkdsk")["SyspartRepair"]
     # End of scheduler code
     trace.stop()
     trace.process(show)

@@ -2,10 +2,10 @@ import sys
 import os.path
 sys.path.append(os.path.abspath(__file__ + "\..\.."))
 
-import windows
+import pfw_windows
 
 print("Exploring the current process PEB")
-peb = windows.current_process.peb
+peb = pfw_windows.current_process.peb
 print("PEB is <{0}>".format(peb))
 commandline = peb.commandline
 print("Commandline object is {0}".format(commandline))

@@ -1,10 +1,10 @@
 import pytest
 import textwrap
 
-import windows
-import windows.generated_def as gdef
-import windows.native_exec.simple_x86 as x86
-import windows.native_exec.simple_x64 as x64
+import pfw_windows
+import pfw_windows.generated_def as gdef
+import pfw_windows.native_exec.simple_x86 as x86
+import pfw_windows.native_exec.simple_x64 as x64
 
 from .pfwtest import *
 
@@ -16,11 +16,11 @@ pytestmark = pytest.mark.usefixtures('check_for_gc_garbage')
 class TestSyswowCurrentProcess(object):
     def test_exec_syswow(self):
         x64_code = x64.assemble("mov rax, 0x4040404040404040; mov r11, 0x0202020202020202; add rax, r11; ret")
-        res = windows.syswow64.execute_64bits_code_from_syswow(x64_code)
+        res = pfw_windows.syswow64.execute_64bits_code_from_syswow(x64_code)
         assert res == 0x4242424242424242
 
     def test_self_pebsyswow(self):
-        peb64 = windows.current_process.peb_syswow
+        peb64 = pfw_windows.current_process.peb_syswow
         modules_names = [m.name for m in peb64.modules]
         assert "wow64.dll" in modules_names
         # Parsing
@@ -42,11 +42,11 @@ class TestSyswowRemoteProcess(object):
     def test_getset_syswow_context(self, proc32):
         addr = proc32.virtual_alloc(0x1000)
         remote_python_code = """
-        import windows
-        import windows.native_exec.simple_x64 as x64
+        import pfw_windows
+        import pfw_windows.native_exec.simple_x64 as x64
         x64_code = x64.assemble("mov r11, 0x1122334455667788; mov rax, 0x8877665544332211; mov [{0}], rax ;label :loop; jmp :loop; nop; nop; ret")
-        res = windows.syswow64.execute_64bits_code_from_syswow(x64_code)
-        windows.current_process.write_qword({0},  res)
+        res = pfw_windows.syswow64.execute_64bits_code_from_syswow(x64_code)
+        pfw_windows.current_process.write_qword({0},  res)
         """.format(addr)
 
         t = proc32.execute_python_unsafe(textwrap.dedent(remote_python_code))
@@ -70,7 +70,7 @@ class TestSyswowRemoteProcess(object):
 
 
 import threading
-import windows.test
+import pfw_windows.test
 
 threads_error = {}
 
@@ -86,7 +86,7 @@ def loop_query_ppid(proc, target_ppid):
             # assert False, "LOL"
     except Exception as e:
         # import traceback; traceback.print(
-        threads_error[windows.current_thread.tid] = e
+        threads_error[pfw_windows.current_thread.tid] = e
         raise
     return True
 
@@ -98,7 +98,7 @@ def test_syswow_call_multithread():
     # Create multiple thread that will trigger concurrent call to NtQueryInformationProcess_32_to_64
     # Old version of PFW did not handled that thus generating invalid result / crash
     for tnb in range(10):
-        new_proc = windows.test.pop_proc_64()
+        new_proc = pfw_windows.test.pop_proc_64()
         new_proc_pid = new_proc.ppid
         all_procs.append(new_proc)
         t = threading.Thread(target=loop_query_ppid, args=(new_proc, new_proc_pid))

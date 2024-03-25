@@ -4,12 +4,12 @@ import pprint
 import argparse
 sys.path.append(os.path.abspath(__file__ + "\..\.."))
 
-import windows
-import windows.debug
-import windows.generated_def as gdef
+import pfw_windows
+import pfw_windows.debug
+import pfw_windows.generated_def as gdef
 
-class FollowNtCreateFile(windows.debug.FunctionBP):
-    TARGET = windows.winproxy.NtCreateFile
+class FollowNtCreateFile(pfw_windows.debug.FunctionBP):
+    TARGET = pfw_windows.winproxy.NtCreateFile
 
     def trigger(self, dbg, exc):
         params = self.extract_arguments(dbg.current_process, dbg.current_thread)
@@ -26,8 +26,8 @@ class FollowNtCreateFile(windows.debug.FunctionBP):
         handle_value = dbg.current_process.read_ptr(handle_addr)
         return dbg.on_file_create(filename, handle_value)
 
-class FollowReadFile(windows.debug.FunctionBP):
-    TARGET = windows.winproxy.ReadFile
+class FollowReadFile(pfw_windows.debug.FunctionBP):
+    TARGET = pfw_windows.winproxy.ReadFile
 
     def trigger(self, dbg, exc):
         params = self.extract_arguments(dbg.current_process, dbg.current_thread)
@@ -44,23 +44,23 @@ class FollowReadFile(windows.debug.FunctionBP):
         read_data = dbg.current_process.read_memory(params["lpBuffer"], buffer_size)
         return dbg.on_file_read(params["hFile"], read_data)
 
-class FollowWriteFile(windows.debug.FunctionBP):
-    TARGET = windows.winproxy.WriteFile
+class FollowWriteFile(pfw_windows.debug.FunctionBP):
+    TARGET = pfw_windows.winproxy.WriteFile
 
     def trigger(self, dbg, exc):
         params = self.extract_arguments(dbg.current_process, dbg.current_thread)
         write_data = dbg.current_process.read_memory(params["lpBuffer"], params["nNumberOfBytesToWrite"])
         return dbg.on_file_write(params["hFile"], write_data)
 
-class FollowCloseFile(windows.debug.FunctionBP):
-    TARGET = windows.winproxy.CloseHandle
+class FollowCloseFile(pfw_windows.debug.FunctionBP):
+    TARGET = pfw_windows.winproxy.CloseHandle
 
     def trigger(self, dbg, exc):
         params = self.extract_arguments(dbg.current_process, dbg.current_thread)
         return dbg.on_file_close(params["hObject"])
 
 
-class FileFollowDebugger(windows.debug.Debugger):
+class FileFollowDebugger(pfw_windows.debug.Debugger):
     def __init__(self, target, filenames):
         super(FileFollowDebugger, self).__init__(target)
         self.filenames = filenames
@@ -109,7 +109,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     print(args)
 
-    target = windows.utils.create_process(args.exe, args.cmdline.split(), dwCreationFlags=gdef.DEBUG_PROCESS, show_windows=True)
+    target = pfw_windows.utils.create_process(args.exe, args.cmdline.split(), dwCreationFlags=gdef.DEBUG_PROCESS, show_windows=True)
 
     dbg = FileFollowDebugger(target, args.files)
     dbg.loop()

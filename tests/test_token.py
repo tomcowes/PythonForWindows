@@ -1,20 +1,20 @@
 import pytest
 import os
 
-import windows
-import windows.security
-import windows.generated_def as gdef
+import pfw_windows
+import pfw_windows.security
+import pfw_windows.generated_def as gdef
 
 @pytest.fixture
 def curtok():
-    return windows.current_process.token
+    return pfw_windows.current_process.token
 
 @pytest.fixture
 def newtok():
-    return windows.current_process.token.duplicate()
+    return pfw_windows.current_process.token.duplicate()
 
 
-if windows.pycompat.is_py3:
+if pfw_windows.pycompat.is_py3:
     unicode_type = str
 else:
     unicode_type = unicode
@@ -22,7 +22,7 @@ else:
 def test_token_info(curtok):
     assert isinstance(curtok.computername, unicode_type)
     assert isinstance(curtok.username, unicode_type)
-    assert isinstance(curtok.integrity, windows.pycompat.int_types)
+    assert isinstance(curtok.integrity, pfw_windows.pycompat.int_types)
     assert isinstance(curtok.is_elevated, (bool))
 
 def test_lower_integrity(newtok):
@@ -35,8 +35,8 @@ def test_lower_integrity(newtok):
 def test_token_user(curtok):
     user_sid = curtok.user
     assert user_sid
-    computername, username = windows.utils.lookup_sid(user_sid)
-    assert computername == windows.system.computer_name
+    computername, username = pfw_windows.utils.lookup_sid(user_sid)
+    assert computername == pfw_windows.system.computer_name
     assert username == os.environ["USERNAME"]
 
 def test_token_id(curtok):

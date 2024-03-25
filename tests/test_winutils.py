@@ -4,8 +4,8 @@ import os
 import tempfile
 
 from datetime import datetime, timedelta
-import windows.utils
-import windows.generated_def as gdef
+import pfw_windows.utils
+import pfw_windows.generated_def as gdef
 from .pfwtest import *
 
 if sys.version_info.major >= 3:
@@ -32,10 +32,10 @@ ntqueryinformationfile_info_structs = {
 
 def test_query_file_information():
     f = open(r"C:\windows\system32\ntdll.dll")
-    handle = windows.utils.get_handle_from_file(f)
+    handle = pfw_windows.utils.get_handle_from_file(f)
     for info_class, info_struct in ntqueryinformationfile_info_structs.items():
-        res = windows.utils.query_file_information(handle, info_class) # Fail should raise
-        resf = windows.utils.query_file_information(f, info_class) # Try with the file directly
+        res = pfw_windows.utils.query_file_information(handle, info_class) # Fail should raise
+        resf = pfw_windows.utils.query_file_information(f, info_class) # Try with the file directly
         # Check return type
         assert isinstance(res, info_struct)
         assert isinstance(resf, info_struct)
@@ -55,11 +55,11 @@ ntqueryvolumeinformationfile_info_structs = {
 
 def test_query_volume_information():
     f = open(r"C:\windows\system32\ntdll.dll")
-    handle = windows.utils.get_handle_from_file(f)
+    handle = pfw_windows.utils.get_handle_from_file(f)
 
     for info_class, info_struct in ntqueryvolumeinformationfile_info_structs.items():
-        res = windows.utils.query_volume_information(handle, info_class) # Fail should raise
-        resf = windows.utils.query_volume_information(f, info_class) # Try with the file directly
+        res = pfw_windows.utils.query_volume_information(handle, info_class) # Fail should raise
+        resf = pfw_windows.utils.query_volume_information(f, info_class) # Try with the file directly
         # Check return type
         assert isinstance(res, info_struct)
         assert isinstance(resf, info_struct)
@@ -75,7 +75,7 @@ def test_datetime_from_filetime():
     FILENAME = "C:\\windows\\system32\\ntdll.dll"
     f = open(FILENAME)
 
-    datetime_from_filetime = windows.utils.datetime_from_filetime
+    datetime_from_filetime = pfw_windows.utils.datetime_from_filetime
 
     # Compare to os.stat
     stats = os.stat(FILENAME)
@@ -84,7 +84,7 @@ def test_datetime_from_filetime():
     utc_sctime = datetime.utcfromtimestamp(stats.st_ctime)
 
     # Compare to NtQueryInformationFile
-    fileinfo = windows.utils.query_file_information(f, gdef.FileBasicInformation)
+    fileinfo = pfw_windows.utils.query_file_information(f, gdef.FileBasicInformation)
 
     utc_watime = datetime_from_filetime(fileinfo.LastAccessTime)
     utc_wmtime = datetime_from_filetime(fileinfo.LastWriteTime)
@@ -114,14 +114,14 @@ def test_datetime_from_filetime():
 def test_unix_timestamp_from_filetime():
     # Check date vs timestamps to be sure
     assert datetime.utcfromtimestamp(1504765968.072730) == datetime(2017, 9, 7, 6, 32, 48, 72730)
-    assert windows.utils.unix_timestamp_from_filetime(131492395680727300) == 1504765968.072730
-    assert windows.utils.unix_timestamp_from_filetime(131492395680727304) == 1504765968.072730
+    assert pfw_windows.utils.unix_timestamp_from_filetime(131492395680727300) == 1504765968.072730
+    assert pfw_windows.utils.unix_timestamp_from_filetime(131492395680727304) == 1504765968.072730
 
     assert datetime.utcfromtimestamp(1504765968.072731) == datetime(2017, 9, 7, 6, 32, 48, 72731)
-    assert windows.utils.unix_timestamp_from_filetime(131492395680727309) == 1504765968.072731
+    assert pfw_windows.utils.unix_timestamp_from_filetime(131492395680727309) == 1504765968.072731
     # Well py3 will round it to 1504765968.07273
     # Because round(0.5) == 0 (vs 1 in py2)
-    assert windows.utils.unix_timestamp_from_filetime(131492395680727305) == 1504765968.072731
+    assert pfw_windows.utils.unix_timestamp_from_filetime(131492395680727305) == 1504765968.072731
 
 # Test values from https://docs.microsoft.com/en-us/cpp/atl-mfc-shared/date-type?view=vs-2019
 @pytest.mark.parametrize("comtime, date", [
@@ -138,7 +138,7 @@ def test_unix_timestamp_from_filetime():
     (-2.75, datetime(1899, 12, 28, hour=18)),
 ])
 def test_datetime_from_comtime(comtime, date):
-    assert windows.utils.datetime_from_comdate(comtime) == date
+    assert pfw_windows.utils.datetime_from_comdate(comtime) == date
 
 @pytest.mark.parametrize("prefix", [
     ("long_ascii_prefix"),
@@ -148,10 +148,10 @@ def test_long_short_path_str_unicode(prefix):
     """Test that get_short_path/get_long_path works with str/unicode path and preserve path type"""
     with tempfile.NamedTemporaryFile(prefix=prefix) as f:
         basename = f.name.lower()
-        short_name = windows.utils.get_short_path(basename).lower()
+        short_name = pfw_windows.utils.get_short_path(basename).lower()
         assert isinstance(short_name, unicode)
         assert short_name != basename
-        full_name = windows.utils.get_long_path(short_name).lower()
+        full_name = pfw_windows.utils.get_long_path(short_name).lower()
         assert isinstance(full_name, unicode)
         assert full_name == basename
 
@@ -167,8 +167,8 @@ gy+ApYDdSwTtWFARSrMqk7rRHUveYEfMw72yaOWDxCzcopEuADKrrYEute4CzZuXF9PbbgK6"""
 
 
 def test_sprint_certificate():
-    cert = windows.crypto.Certificate.from_buffer(b64decode(TEST_CERT))
+    cert = pfw_windows.crypto.Certificate.from_buffer(b64decode(TEST_CERT))
     # Certificate is quite a complexe Windows structure
     # With Sub-struct / Pointer & string
     # It was broken on py3 -> ense this test
-    windows.utils.sprint(cert)
+    pfw_windows.utils.sprint(cert)

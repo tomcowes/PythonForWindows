@@ -1,6 +1,6 @@
-import windows.native_exec.simple_x86 as x86
-import windows.native_exec.simple_x64 as x64
-from windows.native_exec import nativeutils
+import pfw_windows.native_exec.simple_x86 as x86
+import pfw_windows.native_exec.simple_x64 as x64
+from pfw_windows.native_exec import nativeutils
 
 def perform_manual_getproc_loadlib_32_for_dbg(target, dll_name):
         dll = "KERNEL32.DLL\x00".encode("utf-16-le")

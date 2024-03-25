@@ -1,8 +1,8 @@
 import pytest
 import os.path
 
-import windows
-import windows.generated_def as gdef
+import pfw_windows
+import pfw_windows.generated_def as gdef
 
 pytestmark = pytest.mark.usefixtures("init_com_security")
 
@@ -10,7 +10,7 @@ SCRIPT_PATH = os.path.dirname(os.path.abspath(__file__))
 
 @pytest.fixture
 def bitsjob():
-    newjob = windows.system.bits.create("PFW_TEST_BITSJOB", gdef.BG_JOB_TYPE_DOWNLOAD)
+    newjob = pfw_windows.system.bits.create("PFW_TEST_BITSJOB", gdef.BG_JOB_TYPE_DOWNLOAD)
     yield newjob
     newjob.Cancel()
 

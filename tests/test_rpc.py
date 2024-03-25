@@ -2,9 +2,9 @@ import sys
 import pytest
 import os.path
 
-import windows.rpc as rpc
-from windows.rpc import ndr
-import windows.generated_def as gdef
+import pfw_windows.rpc as rpc
+from pfw_windows.rpc import ndr
+import pfw_windows.generated_def as gdef
 
 from .pfwtest import *
 
@@ -15,7 +15,7 @@ UAC_UIID = "201ef99a-7fa0-444c-9399-19ba84f12a1a"
 
 
 def test_rpc_epmapper():
-    endpoints = windows.rpc.find_alpc_endpoints(UAC_UIID)
+    endpoints = pfw_windows.rpc.find_alpc_endpoints(UAC_UIID)
     assert endpoints
     endpoint = endpoints[0]
     assert endpoint.protseq == "ncalrpc"
@@ -56,7 +56,7 @@ class NdrProcessInformation(ndr.NdrParameters):
 
 
 def test_rpc_uac_call():
-    client = windows.rpc.find_alpc_endpoint_and_connect(UAC_UIID)
+    client = pfw_windows.rpc.find_alpc_endpoint_and_connect(UAC_UIID)
     iid = client.bind(UAC_UIID)
 
     python_path = sys.executable
@@ -96,8 +96,8 @@ def test_rpc_uac_call():
     assert pid
     assert th
     assert tid
-    windows.winproxy.CloseHandle(th) # NoLeak
-    proc = windows.WinProcess(handle=ph)
+    pfw_windows.winproxy.CloseHandle(th) # NoLeak
+    proc = pfw_windows.WinProcess(handle=ph)
     assert proc.name == python_name
     assert proc.pid == pid
     proc.exit(0)

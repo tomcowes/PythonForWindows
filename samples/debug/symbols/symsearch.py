@@ -1,8 +1,8 @@
 import argparse
 import os
 
-import windows
-import windows.debug.symbols as symbols
+import pfw_windows
+import pfw_windows.debug.symbols as symbols
 
 
 parser = argparse.ArgumentParser(prog=__file__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)

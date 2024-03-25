@@ -2,19 +2,19 @@ import os.path
 import pytest
 import base64
 
-import windows
-import windows.generated_def as gdef
+import pfw_windows
+import pfw_windows.generated_def as gdef
 
-is_process_32_bits = windows.current_process.bitness == 32
-is_process_64_bits = windows.current_process.bitness == 64
-is_process_syswow = windows.current_process.is_wow_64
+is_process_32_bits = pfw_windows.current_process.bitness == 32
+is_process_64_bits = pfw_windows.current_process.bitness == 64
+is_process_syswow = pfw_windows.current_process.is_wow_64
 
-is_windows_32_bits = windows.system.bitness == 32
-is_windows_64_bits = windows.system.bitness == 64
+is_windows_32_bits = pfw_windows.system.bitness == 32
+is_windows_64_bits = pfw_windows.system.bitness == 64
 
-is_windows_10 = (windows.system.version[0] == 10)
+is_windows_10 = (pfw_windows.system.version[0] == 10)
 
-is_admin = windows.current_process.token.is_elevated
+is_admin = pfw_windows.current_process.token.is_elevated
 
 windows_32bit_only = pytest.mark.skipif(not is_windows_32_bits, reason="Test for 32bits Kernel only")
 windows_64bit_only = pytest.mark.skipif(not is_windows_64_bits, reason="Test for 64bits Kernel only")
@@ -35,14 +35,14 @@ DEFAULT_CREATION_FLAGS = gdef.CREATE_NEW_CONSOLE
 # Python Injection check fixture
 
 python_is_installed = {
-    windows.current_process.bitness: True
+    pfw_windows.current_process.bitness: True
 }
 
-if windows.current_process.bitness == 32:
-    with windows.utils.DisableWow64FsRedirection():
+if pfw_windows.current_process.bitness == 32:
+    with pfw_windows.utils.DisableWow64FsRedirection():
         python_is_installed[64] = os.path.exists(r"C:\Windows\system32\python27.dll")
 
-if windows.current_process.bitness == 64:
+if pfw_windows.current_process.bitness == 64:
     python_is_installed[32] = os.path.exists(r"C:\Windows\SysWOW64\python27.dll")
 
 @pytest.fixture
@@ -63,7 +63,7 @@ python_injection =  pytest.mark.usefixtures("check_injected_python_installed")
 
 ## P2 VS PY3
 
-if windows.pycompat.is_py3:
+if pfw_windows.pycompat.is_py3:
     b64decode = base64.decodebytes
 else:
     b64decode = base64.decodestring

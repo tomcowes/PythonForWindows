@@ -4,20 +4,20 @@ import pprint
 sys.path.append(os.path.abspath(__file__ + "\..\.."))
 
 import ctypes
-import windows
-import windows.test
+import pfw_windows
+import pfw_windows.test
 
-from windows.generated_def.winstructs import *
+from pfw_windows.generated_def.winstructs import *
 
 remote_code = """
-import windows
-from windows.generated_def.winstructs import *
+import pfw_windows
+from pfw_windows.generated_def.winstructs import *
 
-windows.utils.create_console()
+pfw_windows.utils.create_console()
 
-class YOLOHXBP(windows.debug.HXBreakpoint):
+class YOLOHXBP(pfw_windows.debug.HXBreakpoint):
     def trigger(self, dbg, exc):
-        p = windows.current_process
+        p = pfw_windows.current_process
         arg_pos = 2
         context = dbg.get_exception_context()
         esp = context.Esp
@@ -26,16 +26,16 @@ class YOLOHXBP(windows.debug.HXBreakpoint):
         dll_loaded = p.read_wstring(wstring_addr)
         print("I AM LOADING <{0}>".format(dll_loaded))
 
-d = windows.debug.LocalDebugger()
+d = pfw_windows.debug.LocalDebugger()
 
-exp = windows.current_process.peb.modules[1].pe.exports
-#windows.utils.FixedInteractiveConsole(locals()).interact()
+exp = pfw_windows.current_process.peb.modules[1].pe.exports
+#pfw_windows.utils.FixedInteractiveConsole(locals()).interact()
 ldr = exp["LdrLoadDll"]
 d.add_bp(YOLOHXBP(ldr))
 
 """
 
-c = windows.test.pop_proc_32(dwCreationFlags=CREATE_SUSPENDED)
+c = pfw_windows.test.pop_proc_32(dwCreationFlags=CREATE_SUSPENDED)
 c.execute_python(remote_code)
 c.threads[0].resume()
 

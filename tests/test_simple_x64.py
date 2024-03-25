@@ -4,11 +4,11 @@ except ImportError as e:
     capstone = None
 import pytest
 
-import windows.native_exec.simple_x64 as x64
-from windows.native_exec.simple_x64 import *
+import pfw_windows.native_exec.simple_x64 as x64
+from pfw_windows.native_exec.simple_x64 import *
 del Test # Prevent pytest warning
 
-from windows.pycompat import int_types
+from pfw_windows.pycompat import int_types
 
 if capstone:
     disassembleur = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_64)

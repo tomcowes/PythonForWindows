@@ -1,12 +1,12 @@
 import pytest
-import windows
+import pfw_windows
 
 from .pfwtest import *
 
 
 KNOWN_DIRECTORY_OBJECT = ("KnownDLLs", "\\KnownDLLs")
 
-objmanager = windows.system.object_manager
+objmanager = pfw_windows.system.object_manager
 
 @pytest.mark.parametrize("objname", KNOWN_DIRECTORY_OBJECT)
 def test_directory_object(objname):

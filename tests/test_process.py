@@ -7,51 +7,51 @@ import struct
 import textwrap
 import shutil
 
-import windows
-import windows.pipe
-import windows.generated_def as gdef
-import windows.native_exec.simple_x86 as x86
-import windows.native_exec.simple_x64 as x64
+import pfw_windows
+import pfw_windows.pipe
+import pfw_windows.generated_def as gdef
+import pfw_windows.native_exec.simple_x86 as x86
+import pfw_windows.native_exec.simple_x64 as x64
 
 from .pfwtest import *
 
 @check_for_gc_garbage
 class TestCurrentProcessWithCheckGarbage(object):
     def test_current_process_ppid(self):
-        myself = [p for p in windows.system.processes if p.pid == windows.current_process.pid][0]
-        assert myself.ppid == windows.current_process.ppid
+        myself = [p for p in pfw_windows.system.processes if p.pid == pfw_windows.current_process.pid][0]
+        assert myself.ppid == pfw_windows.current_process.ppid
 
     def test_get_current_process_peb(self):
-        return windows.current_process.peb
+        return pfw_windows.current_process.peb
 
     def test_get_current_process_modules(self):
         # Use sys.executable because executable can be a PyInstaller exe
-        assert os.path.basename(sys.executable) in windows.current_process.peb.modules[0].name
+        assert os.path.basename(sys.executable) in pfw_windows.current_process.peb.modules[0].name
 
     def test_get_current_process_exe(self):
-        exe = windows.current_process.peb.exe
-        exe_by_module = windows.current_process.peb.modules[0].pe
+        exe = pfw_windows.current_process.peb.exe
+        exe_by_module = pfw_windows.current_process.peb.modules[0].pe
         exe.baseaddr == exe_by_module.baseaddr
         exe.bitness ==  exe_by_module.bitness
 
     def test_current_process_pe_imports(self):
-        python_module = windows.current_process.peb.modules[0]
+        python_module = pfw_windows.current_process.peb.modules[0]
         imp = python_module.pe.imports
         assert "kernel32.dll" in imp.keys(), 'Kernel32.dll not in python imports'
         current_proc_id_iat = [f for f in imp["kernel32.dll"] if f.name == "GetCurrentProcessId"][0]
-        k32_base = windows.winproxy.LoadLibraryA(b"kernel32.dll")
-        assert windows.winproxy.GetProcAddress(k32_base, b"GetCurrentProcessId") == current_proc_id_iat.value
+        k32_base = pfw_windows.winproxy.LoadLibraryA(b"kernel32.dll")
+        assert pfw_windows.winproxy.GetProcAddress(k32_base, b"GetCurrentProcessId") == current_proc_id_iat.value
 
     def test_current_process_pe_exports(self):
-        mods = [m for m in windows.current_process.peb.modules if m.name == "kernel32.dll"]
+        mods = [m for m in pfw_windows.current_process.peb.modules if m.name == "kernel32.dll"]
         assert mods, 'Could not find "kernel32.dll" in current process modules'
         k32 = mods[0]
         get_current_proc_id = k32.pe.exports['GetCurrentProcessId']
-        k32_base = windows.winproxy.LoadLibraryA(b"kernel32.dll")
-        assert windows.winproxy.GetProcAddress(k32_base, b"GetCurrentProcessId") ==  get_current_proc_id
+        k32_base = pfw_windows.winproxy.LoadLibraryA(b"kernel32.dll")
+        assert pfw_windows.winproxy.GetProcAddress(k32_base, b"GetCurrentProcessId") ==  get_current_proc_id
 
     def test_local_process_pe_sections(self):
-        mods = [m for m in windows.current_process.peb.modules if m.name == "kernel32.dll"]
+        mods = [m for m in pfw_windows.current_process.peb.modules if m.name == "kernel32.dll"]
         assert mods, 'Could not find "kernel32.dll" in current process modules'
         k32 = mods[0]
         sections = k32.pe.sections
@@ -61,8 +61,8 @@ class TestCurrentProcessWithCheckGarbage(object):
         sections[0].size
 
     def test_local_ProcessParameters_LSA_UNICODE_STRING(self):
-        image_path_from_process_params = windows.current_process.peb.ProcessParameters.contents.ImagePathName.str.lower()
-        image_path_from_module = windows.current_process.peb.modules[0].fullname.lower()
+        image_path_from_process_params = pfw_windows.current_process.peb.ProcessParameters.contents.ImagePathName.str.lower()
+        image_path_from_module = pfw_windows.current_process.peb.modules[0].fullname.lower()
         assert image_path_from_process_params == image_path_from_module
 
 
@@ -79,17 +79,17 @@ class TestProcessWithCheckGarbage(object):
          assert proc64.bitness == 64
 
     def test_process_ppid(self, proc32_64):
-        assert proc32_64.ppid ==  windows.current_process.pid
+        assert proc32_64.ppid ==  pfw_windows.current_process.pid
 
     def test_create_process_unicode(self):
-        p = windows.utils.create_process(u"c:\\windows\\system32\\winver.exe", [u"--", u"yolo.txt"])
+        p = pfw_windows.utils.create_process(u"c:\\windows\\system32\\winver.exe", [u"--", u"yolo.txt"])
         try:
             assert p.name == "winver.exe"
         finally:
             p.exit()
 
     def test_create_process_bytes(self):
-        p = windows.utils.create_process(b"c:\\windows\\system32\\winver.exe", [b"--", b"yolo.txt"])
+        p = pfw_windows.utils.create_process(b"c:\\windows\\system32\\winver.exe", [b"--", b"yolo.txt"])
         try:
             assert p.name == "winver.exe"
         finally:
@@ -144,7 +144,7 @@ class TestProcessWithCheckGarbage(object):
             assert proc32_64.read_wstring(waddr) ==  test_string
 
     def test_read_string_end_page_current_process(self):
-        current_proc = windows.current_process
+        current_proc = pfw_windows.current_process
         test_string = b"TEST_STRING"
         string_to_write = test_string + b"\x00"
         with current_proc.allocated_memory(0x1000) as addr:
@@ -155,7 +155,7 @@ class TestProcessWithCheckGarbage(object):
             assert current_proc.read_string(waddr) ==  test_string
 
     def test_read_wstring_end_page_current_process(self):
-        current_proc = windows.current_process
+        current_proc = pfw_windows.current_process
         test_string = u"TEST_STRING"
         string_to_write = (test_string + "\x00").encode("utf-16-le")
         with current_proc.allocated_memory(0x1000) as addr:
@@ -210,9 +210,9 @@ class TestProcessWithCheckGarbage(object):
 
     def test_execute_python_good_version(self, proc32_64):
         PIPE_NAME = "PFW_TEST_Pipe"
-        rcode = r"""import sys; import windows; import windows.pipe; windows.pipe.send_object("{pipe}", list(sys.version_info))"""
+        rcode = r"""import sys; import pfw_windows; import pfw_windows.pipe; pfw_windows.pipe.send_object("{pipe}", list(sys.version_info))"""
 
-        with windows.pipe.create(PIPE_NAME) as np:
+        with pfw_windows.pipe.create(PIPE_NAME) as np:
             proc32_64.execute_python(rcode.format(pipe=PIPE_NAME))
             version = np.recv()
             # Check only major/minor
@@ -261,9 +261,9 @@ class TestProcessWithCheckGarbage(object):
         with proc32_64.allocated_memory(0x1000) as addr:
             remote_python_code = """
                                 import ctypes
-                                import windows
-                                # windows.utils.create_console() # remove comment for debug
-                                k32 = [m for m in windows.current_process.peb.modules if m.name == "kernel32.dll"][0]
+                                import pfw_windows
+                                # pfw_windows.utils.create_console() # remove comment for debug
+                                k32 = [m for m in pfw_windows.current_process.peb.modules if m.name == "kernel32.dll"][0]
                                 GetCurrentProcessId = k32.pe.exports['GetCurrentProcessId']
                                 ctypes.c_void_p.from_address({1}).value = GetCurrentProcessId
                                 """.format(os.getcwd(), addr)
@@ -282,13 +282,13 @@ class TestProcessWithCheckGarbage(object):
     def test_execute_python_raises(self, proc32_64):
         res = proc32_64.execute_python("import time;time.sleep(0.1); 2")
         assert res == True
-        with pytest.raises(windows.injection.RemotePythonError) as ar:
+        with pytest.raises(pfw_windows.injection.RemotePythonError) as ar:
             t = proc32_64.execute_python("import time;time.sleep(0.1); raise ValueError('EXCEPTION_MESSAGE')")
         # Check the RemotePythonError contains the remote exception text
         assert b"ValueError: EXCEPTION_MESSAGE" in ar.value.args[0]
 
     def test_execute_python_create_console(self, proc32_64):
-        res = proc32_64.execute_python("import windows; windows.utils.create_console()")
+        res = proc32_64.execute_python("import pfw_windows; pfw_windows.utils.create_console()")
 
     def test_thread_start_address(self, proc32_64):
         t = proc32_64.threads[0]
@@ -370,7 +370,7 @@ class TestProcessWithCheckGarbage(object):
         assert DLL in [m.name for m in proc32_64.peb.modules]
 
     def test_load_library_unicode_name(self, proc32_64, tmpdir):
-        mybitness = windows.current_process.bitness
+        mybitness = pfw_windows.current_process.bitness
         UNICODE_FILENAME = u'\u4e2d\u56fd\u94f6\u884c\u7f51\u94f6\u52a9\u624b.dll'
 
         if proc32_64.bitness == mybitness:
@@ -393,7 +393,7 @@ class TestProcessWithCheckGarbage(object):
 # UNICODE_PATH_NAME = u'\u4e2d\u56fd\u94f6\u884c\u7f51\u94f6\u52a9\u624b'
 
 # def test_unicode_path_module(tmpdir, proc32_64):
-    # assert windows.current_process.bitness == 32
+    # assert pfw_windows.current_process.bitness == 32
     # if proc32_64.bitness == 64:
         # wintrust_native_path = r'c:\windows\sysnative\wintrust.dll'
     # else:
@@ -479,7 +479,7 @@ class TestProcessWithCheckGarbage(object):
 
     def test_thread_owner_from_tid(self, proc32_64):
         thread = proc32_64.threads[0]
-        tst_thread = windows.winobject.process.WinThread(tid=thread.tid)
+        tst_thread = pfw_windows.winobject.process.WinThread(tid=thread.tid)
         assert thread.owner_pid == tst_thread.owner_pid
         assert thread.owner.name == tst_thread.owner.name
 
@@ -490,15 +490,15 @@ class TestProcessWithCheckGarbage(object):
 
     def test_remote_assertion_error(self, proc32):
         proc32.execute_python("assert 1 == 1")
-        with pytest.raises(windows.injection.RemotePythonError):
+        with pytest.raises(pfw_windows.injection.RemotePythonError):
             proc32.execute_python("assert 1 == 2")
 
 
     def test_process_set_security_descriptor(self, proc32_64):
-        current_user_sid = str(windows.current_process.token.user)
+        current_user_sid = str(pfw_windows.current_process.token.user)
         # Same Owner/Group -> ALL acces to all
         SSDL_GR_EVERYONE = "O:{user}G:{user}D:(A;;0x1fffff;;;WD)".format(user=current_user_sid)
-        SD_GR_EVERYONE = windows.security.SecurityDescriptor.from_string(SSDL_GR_EVERYONE)
+        SD_GR_EVERYONE = pfw_windows.security.SecurityDescriptor.from_string(SSDL_GR_EVERYONE)
         # Via string
         proc32_64.security_descriptor = SSDL_GR_EVERYONE
         # Via SD obj
@@ -515,10 +515,10 @@ class TestProcessWithCheckGarbage(object):
         else:
             target_programe = str(target_programe)
         shutil.copy(source_programme, target_programe)
-        p = windows.utils.create_process(target_programe, dwCreationFlags=gdef.CREATE_NEW_CONSOLE)
+        p = pfw_windows.utils.create_process(target_programe, dwCreationFlags=gdef.CREATE_NEW_CONSOLE)
         try:
-            assert windows.system.processes
-            print(windows.system.processes) # Check for encoding error in __repr__ of WinProcess
+            assert pfw_windows.system.processes
+            print(pfw_windows.system.processes) # Check for encoding error in __repr__ of WinProcess
         finally:
             p.exit()
             p.wait()

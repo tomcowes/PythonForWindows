@@ -1,6 +1,6 @@
 import pytest
 
-from windows.rpc import ndr
+from pfw_windows.rpc import ndr
 from .pfwtest import *
 
 from tests.test_rpc import UACParameters
@@ -131,7 +131,7 @@ def test_ndr_packing_complex_epmapper_call():
     context = (0, 0, 0, 0, 0)
     nb_response = 1
 
-    packed = windows.rpc.epmapper.EptMapAuthParameters.pack([bytearray(targetiid),
+    packed = pfw_windows.rpc.epmapper.EptMapAuthParameters.pack([bytearray(targetiid),
                                                     (len(towerarray), towerarray),
                                                     local_system_psid,
                                                     context,

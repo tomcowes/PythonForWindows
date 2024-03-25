@@ -2,10 +2,10 @@ import sys
 import os.path
 sys.path.append(os.path.abspath(__file__ + "\..\.."))
 
-import windows
-import windows.generated_def as gdef
+import pfw_windows
+import pfw_windows.generated_def as gdef
 
-devmgr = windows.system.device_manager
+devmgr = pfw_windows.system.device_manager
 print("Device manager is {0}".format(devmgr))
 
 print("Enumerating the first 3 device classes")
@@ -31,7 +31,7 @@ for devinst in (devices[0], devices[25], devices[35]): # Some "random" devices t
 
 # python64  samples\device\device_manager.py
 
-# Device manager is <windows.winobject.device_manager.DeviceManager object at 0x0000000003669908>
+# Device manager is <pfw_windows.winobject.device_manager.DeviceManager object at 0x0000000003669908>
 # Enumerating the first 3 device classes
 #  * <DeviceClass name="XboxComposite" guid=05F5CFE2-4733-4950-A6BB-07AAD01A3A84>
 #  * <DeviceClass name="DXGKrnl" guid=1264760F-A5C8-4BFE-B314-D56A7B44A362>

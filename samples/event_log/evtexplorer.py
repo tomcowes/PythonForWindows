@@ -1,5 +1,5 @@
 import sys
-import windows
+import pfw_windows
 
 # target = int(sys.argv[1])
 
@@ -17,7 +17,7 @@ parser.add_argument('evtid', nargs="?", type=int)
 args = parser.parse_args()
 print(args)
 
-for publisher in windows.system.event_log.publishers:
+for publisher in pfw_windows.system.event_log.publishers:
     if args.publisher and args.publisher[0] not in publisher.name:
         continue
 

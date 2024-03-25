@@ -1,8 +1,8 @@
-import windows
+import pfw_windows
 
-print("Computer is a <{0}>".format(windows.system.version_name))
+print("Computer is a <{0}>".format(pfw_windows.system.version_name))
 
-cp = windows.current_process
+cp = pfw_windows.current_process
 apism = cp.peb.apisetmap
 
 print("ApiSetMap: {0} (version = {1})".format(apism, apism.version))

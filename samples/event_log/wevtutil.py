@@ -13,9 +13,9 @@ from io import BytesIO
 from collections import namedtuple
 
 # PythonForWindows
-import windows
-import windows.generated_def as gdef
-from windows.winobject import event_log
+import pfw_windows
+import pfw_windows.generated_def as gdef
+from pfw_windows.winobject import event_log
 
 """ ParsedElement : This represent a deserialized element for the EventRecord user data, using the xml template associated with the event. """
 ParsedElement = namedtuple('ParsedElement', 'index, name, value, format')
@@ -77,7 +77,7 @@ class RealtimeEventLogger(RealtimeEventLoggerBase):
 
 
         # Create a custom realtime ETW trace for printing out events
-        self.etw_trace = windows.system.etw.open_trace(self.etw_trace_name)
+        self.etw_trace = pfw_windows.system.etw.open_trace(self.etw_trace_name)
 
 
     def start_trace(self):
@@ -133,7 +133,7 @@ class RealtimeEventLogger(RealtimeEventLoggerBase):
                 res_size = gdef.DWORD()
                 yolo_ptr = (gdef.EVT_VARIANT * len(xx))(*xx)
                 # import pdb;pdb.set_trace()
-                windows.winproxy.EvtFormatMessage(self.publisher.metadata, None, event_metadata.message_id, len(message_params), yolo_ptr, gdef.EvtFormatMessageId, 0x1000, ctypes.cast(res, gdef.LPCWSTR), res_size)
+                pfw_windows.winproxy.EvtFormatMessage(self.publisher.metadata, None, event_metadata.message_id, len(message_params), yolo_ptr, gdef.EvtFormatMessageId, 0x1000, ctypes.cast(res, gdef.LPCWSTR), res_size)
                 str = res[:res_size.value * 2].decode("utf-16-le")
                 print("=== MINE ===")
                 print(str)

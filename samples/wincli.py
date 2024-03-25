@@ -2,25 +2,25 @@ import argparse
 import os.path
 import code
 
-import windows
-import windows.generated_def as gdef
+import pfw_windows
+import pfw_windows.generated_def as gdef
 
 def find_processes_from_kwargs(pid=None, name=None, **kwargs):
     if pid is None and name is None:
-        return windows.system.processes
+        return pfw_windows.system.processes
     if pid is not None:
-        return [p for p in windows.system.processes if p.pid == pid]
-    return [p for p in windows.system.processes if p.name.lower() == name.lower()]
+        return [p for p in pfw_windows.system.processes if p.pid == pid]
+    return [p for p in pfw_windows.system.processes if p.name.lower() == name.lower()]
 
 def find_one_process_from_kwargs(pid=None, name=None, **kwargs):
     if pid is not None:
-        targets = [p for p in windows.system.processes if p.pid == pid]
+        targets = [p for p in pfw_windows.system.processes if p.pid == pid]
         if not len(targets):
             raise ValueError("Could not find process with pid <{0}>".format(pid))
         assert len(targets) == 1
         return targets[0]
 
-    targets =  [p for p in windows.system.processes if p.name.lower() == name.lower()]
+    targets =  [p for p in pfw_windows.system.processes if p.name.lower() == name.lower()]
     if not len(targets):
         raise ValueError("Could not find a process with name <{0}>".format(name))
     # Ask to choose a process
@@ -43,11 +43,11 @@ def proc_command_list(**kwargs):
 
 def proc_command_shell(**kwargs):
     target = find_one_process_from_kwargs(**kwargs)
-    pfw_path = os.path.dirname(windows.__path__[0])
+    pfw_path = os.path.dirname(pfw_windows.__path__[0])
     print("Using PythonForWindows at <{0}>".format(pfw_path))
     try:
         target.execute_python("import sys; sys.path.append(r'{0}')".format(pfw_path))
-        target.execute_python("import windows; windows.utils.pop_shell()")
+        target.execute_python("import pfw_windows; pfw_windows.utils.pop_shell()")
     except Exception as e:
         print("Error while injecting python code: <{0!r}>".format(e))
         raise
@@ -153,12 +153,12 @@ def proc_find_modules(**kwargs):
 
 def find_services_from_kwargs(name=None, **kwargs):
     if name is None:
-        return windows.system.services
-    return [p for p in windows.system.services if p.name.lower() == name.lower()]
+        return pfw_windows.system.services
+    return [p for p in pfw_windows.system.services if p.name.lower() == name.lower()]
 
 
 def find_one_service_from_kwargs(name=None, **kwargs):
-    targets =  [s for s in windows.system.services if s.name.lower() == name.lower()]
+    targets =  [s for s in pfw_windows.system.services if s.name.lower() == name.lower()]
     if not len(targets):
         raise ValueError("Could not find a service with name <{0}>".format(name))
     # Ask to choose a process

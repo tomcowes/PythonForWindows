@@ -23,7 +23,7 @@ Documentation:
 
 .. code-block:: python
 
-    import windows
+    import pfw_windows
     windows.winproxy.VirtualAlloc
     # <function VirtualAlloc at 0x02ED63F0>
 
@@ -38,7 +38,7 @@ Calling it
 
 .. code-block:: python
 
-    import windows
+    import pfw_windows
 
     # Ordinal arguments
     windows.winproxy.VirtualAlloc(0, 0x1000)

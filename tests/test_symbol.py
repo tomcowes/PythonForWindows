@@ -1,7 +1,7 @@
 import pytest
 
-import windows.generated_def as gdef
-import windows.debug.symbols as symbols
+import pfw_windows.generated_def as gdef
+import pfw_windows.debug.symbols as symbols
 from .pfwtest import *
 
 

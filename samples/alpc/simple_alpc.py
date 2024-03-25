@@ -1,13 +1,13 @@
 import multiprocessing
 
-import windows.alpc
-from windows.generated_def import LPC_CONNECTION_REQUEST, LPC_REQUEST
+import pfw_windows.alpc
+from pfw_windows.generated_def import LPC_CONNECTION_REQUEST, LPC_REQUEST
 
 PORT_NAME = r"\RPC Control\PythonForWindowsPORT"
 
 
 def alpc_server():
-    server = windows.alpc.AlpcServer(PORT_NAME) # Create the ALPC Port
+    server = pfw_windows.alpc.AlpcServer(PORT_NAME) # Create the ALPC Port
     print("[SERV] PORT <{0}> CREATED".format(PORT_NAME))
 
     msg = server.recv() # Wait for a message
@@ -31,9 +31,9 @@ def alpc_server():
 
 
 def alpc_client():
-    print("Client pid = {0}".format(windows.current_process.pid))
+    print("Client pid = {0}".format(pfw_windows.current_process.pid))
     # Creation an 'AlpcClient' with a port name will connect to the port with an empty message
-    client = windows.alpc.AlpcClient(PORT_NAME)
+    client = pfw_windows.alpc.AlpcClient(PORT_NAME)
     print("[CLIENT] Connected: {0}".format(client))
     # Send a message / wait for the response
     response = client.send_receive(b"Hello world !")

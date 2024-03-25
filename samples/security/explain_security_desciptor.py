@@ -1,7 +1,7 @@
 import argparse
 import os.path
 
-import windows.security
+import pfw_windows.security
 
 
 
@@ -11,6 +11,6 @@ parser.add_argument('--type', help='The type of object described by the SDDL (us
 res = parser.parse_args()
 
 if os.path.exists(res.sddl):
-    windows.security.SecurityDescriptor.from_filename(res.sddl).explain("file")
+    pfw_windows.security.SecurityDescriptor.from_filename(res.sddl).explain("file")
 else:
-    windows.security.SecurityDescriptor.from_string(res.sddl).explain(res.type)
+    pfw_windows.security.SecurityDescriptor.from_string(res.sddl).explain(res.type)

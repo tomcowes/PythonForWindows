@@ -4,10 +4,10 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "\\..")
 print(sys.path[-1])
 import pydoc
 import re
-import windows
+import pfw_windows
 
 
-winprox = windows.winproxy
+winprox = pfw_windows.winproxy
 all_in_module = [getattr(winprox, x) for x in dir(winprox)]
 functions = [f for f in all_in_module if hasattr(f, "prototype")]
 

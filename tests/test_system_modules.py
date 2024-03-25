@@ -1,10 +1,10 @@
-import windows
+import pfw_windows
 import ctypes
 
 def test_system_module_gc():
     # Test for issue 12 (Py3)
     # https://github.com/hakril/PythonForWindows/issues/12
-    mods = windows.system.modules
+    mods = pfw_windows.system.modules
     first_name = mods[0].ImageName
     import gc; gc.collect()
     # need to do stuff to trigger the bug

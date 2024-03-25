@@ -3,15 +3,15 @@ import time
 import pytest
 import collections
 
-import windows
-import windows.generated_def as gdef
+import pfw_windows
+import pfw_windows.generated_def as gdef
 
 from .pfwtest import is_windows_32_bits, is_process_32_bits, test_binary_name, DEFAULT_CREATION_FLAGS
 
 
 if is_windows_32_bits:
     def pop_proc_32(dwCreationFlags=DEFAULT_CREATION_FLAGS):
-        p = windows.utils.create_process(r"C:\Windows\system32\{0}".format(test_binary_name).encode("ascii"), dwCreationFlags=dwCreationFlags, show_windows=True)
+        p = pfw_windows.utils.create_process(r"C:\Windows\system32\{0}".format(test_binary_name).encode("ascii"), dwCreationFlags=dwCreationFlags, show_windows=True)
         assert p.bitness == 32
         return p
 
@@ -19,19 +19,19 @@ if is_windows_32_bits:
         raise WindowsError("Cannot create calc64 in 32bits system")
 else:
     def pop_proc_32(dwCreationFlags=DEFAULT_CREATION_FLAGS):
-        p = windows.utils.create_process(r"C:\Windows\syswow64\{0}".format(test_binary_name).encode("ascii"), dwCreationFlags=dwCreationFlags, show_windows=True)
+        p = pfw_windows.utils.create_process(r"C:\Windows\syswow64\{0}".format(test_binary_name).encode("ascii"), dwCreationFlags=dwCreationFlags, show_windows=True)
         assert p.bitness == 32
         return p
 
     if is_process_32_bits:
         def pop_proc_64(dwCreationFlags=DEFAULT_CREATION_FLAGS):
-            with windows.utils.DisableWow64FsRedirection():
-                p = windows.utils.create_process(r"C:\Windows\system32\{0}".format(test_binary_name).encode("ascii"), dwCreationFlags=dwCreationFlags, show_windows=True)
+            with pfw_windows.utils.DisableWow64FsRedirection():
+                p = pfw_windows.utils.create_process(r"C:\Windows\system32\{0}".format(test_binary_name).encode("ascii"), dwCreationFlags=dwCreationFlags, show_windows=True)
                 assert p.bitness == 64
                 return p
     else:
         def pop_proc_64(dwCreationFlags=DEFAULT_CREATION_FLAGS):
-            p = windows.utils.create_process(r"C:\Windows\system32\{0}".format(test_binary_name).encode("ascii"), dwCreationFlags=dwCreationFlags, show_windows=True)
+            p = pfw_windows.utils.create_process(r"C:\Windows\system32\{0}".format(test_binary_name).encode("ascii"), dwCreationFlags=dwCreationFlags, show_windows=True)
             assert p.bitness == 64
             return p
 
@@ -70,8 +70,8 @@ else:
 def init_com_security():
     # Init com security if not done
     try:
-        windows.com.init()
-        return windows.com.initsecurity()
+        pfw_windows.com.init()
+        return pfw_windows.com.initsecurity()
     except WindowsError:
         pass
 
@@ -86,7 +86,7 @@ class HandleDebugger(object):
 
     def get_handles(self):
         tpid = self.pid
-        return [h for h in windows.system.handles if h.dwProcessId == tpid]
+        return [h for h in pfw_windows.system.handles if h.dwProcessId == tpid]
 
     def get_new_handle(self, old_handles=None):
         nh = self.get_handles()
@@ -102,7 +102,7 @@ class HandleDebugger(object):
         print(self.handles_types(self.get_new_handle()))
 
 
-current_process_hdebugger = HandleDebugger(windows.current_process.pid)
+current_process_hdebugger = HandleDebugger(pfw_windows.current_process.pid)
 current_process_hdebugger.refresh_handles()
 
 class NoLeakAssert(AssertionError):

@@ -1,14 +1,14 @@
-import windows
-import windows.generated_def as gdef
+import pfw_windows
+import pfw_windows.generated_def as gdef
 
 def test_ipv4_connection():
-    windows.system.network.ipv4 # Better idea ?
+    pfw_windows.system.network.ipv4 # Better idea ?
 
 def test_ipv6_connection():
-    windows.system.network.ipv6 # Better idea ?
+    pfw_windows.system.network.ipv6 # Better idea ?
 
 def test_firewall():
-    firewall = windows.system.network.firewall
+    firewall = pfw_windows.system.network.firewall
     assert firewall.enabled # Its a dict that should not be empty
     assert firewall.rules # Its a list that should not be empty
     # Just check that fields exists and do not crash for now

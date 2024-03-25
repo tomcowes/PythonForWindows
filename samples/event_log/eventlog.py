@@ -1,7 +1,7 @@
-import windows
-import windows.generated_def as gdef
+import pfw_windows
+import pfw_windows.generated_def as gdef
 
-evtlogmgr = windows.system.event_log
+evtlogmgr = pfw_windows.system.event_log
 print("Event log Manager is: {0}".format(evtlogmgr))
 print("They are <{0}> channels".format(len(list(evtlogmgr.channels))))
 print("They are <{0}> publishers".format(len(list(evtlogmgr.publishers))))

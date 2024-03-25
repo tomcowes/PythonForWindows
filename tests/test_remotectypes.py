@@ -1,11 +1,11 @@
 import ctypes
-import windows
-import windows.generated_def as gdef
-import windows.remotectypes as rctypes
+import pfw_windows
+import pfw_windows.generated_def as gdef
+import pfw_windows.remotectypes as rctypes
 
 
 def test_remote_struct_same_bitness():
-    target = windows.current_process
+    target = pfw_windows.current_process
     struct = gdef.OSVERSIONINFOEXA()
     struct.dwMajorVersion = 42 # DWORD
     struct.dwMinorVersion = 43 # DWORD
@@ -28,7 +28,7 @@ def test_remote_struct_same_bitness():
 # Should I improve remote ctypes to handel this ?
 def test_remote_long_ptr():
     # Bug thatwas in retrieving of NtCreateFile arguments
-    target = windows.current_process
+    target = pfw_windows.current_process
 
     large_int = gdef.LARGE_INTEGER(0x1122334455667788)
     large_int_ptr = gdef.PLARGE_INTEGER(large_int)

@@ -1,10 +1,10 @@
 import os
 import argparse
 
-import windows
-import windows.test
-import windows.generated_def as gdef
-from windows.debug import symbols
+import pfw_windows
+import pfw_windows.test
+import pfw_windows.generated_def as gdef
+from pfw_windows.debug import symbols
 
 
 parser = argparse.ArgumentParser(prog=__file__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -19,10 +19,10 @@ else:
         print("Not dbghelp path given and no environ var 'PFW_DBGHELP_PATH' sample may fail")
 
 
-if windows.current_process.bitness == 32:
-    target = windows.test.pop_proc_32()
+if pfw_windows.current_process.bitness == 32:
+    target = pfw_windows.test.pop_proc_32()
 else:
-    target = windows.test.pop_proc_64()
+    target = pfw_windows.test.pop_proc_64()
 
 print("Target is {0}".format(target))
 sh = symbols.ProcessSymbolHandler(target)

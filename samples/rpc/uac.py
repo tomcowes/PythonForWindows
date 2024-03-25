@@ -1,9 +1,9 @@
 import argparse
 import sys
 
-import windows.rpc
-import windows.generated_def as gdef
-from windows.rpc import ndr
+import pfw_windows.rpc
+import pfw_windows.generated_def as gdef
+from pfw_windows.rpc import ndr
 
 # NDR Descriptions
 class NDRPoint(ndr.NdrStructure):
@@ -47,7 +47,7 @@ print(params)
 
 # Connecting to RPC Interface.
 UAC_UIID = "201ef99a-7fa0-444c-9399-19ba84f12a1a"
-client = windows.rpc.find_alpc_endpoint_and_connect(UAC_UIID)
+client = pfw_windows.rpc.find_alpc_endpoint_and_connect(UAC_UIID)
 iid = client.bind(UAC_UIID)
 
 # Marshalling parameters.
@@ -80,7 +80,7 @@ stream = ndr.NdrStream(result)
 ph, th, pid, tid = NdrProcessInformation.unpack(stream)
 return_value = ndr.NdrLong.unpack(stream)
 print("Return value = {0:#x}".format(return_value))
-target = windows.winobject.process.WinProcess(handle=ph)
+target = pfw_windows.winobject.process.WinProcess(handle=ph)
 print("Created process is {0}".format(target))
 print(" * bitness is {0}".format(target.bitness))
 print(" * integrity: {0}".format(target.token.integrity))

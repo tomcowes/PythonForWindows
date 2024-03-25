@@ -2,12 +2,12 @@ import pytest
 import subprocess
 import os.path
 
-import windows
-import windows.generated_def as gdef
+import pfw_windows
+import pfw_windows.generated_def as gdef
 
 SCHTASKS = "c:\Windows\System32\schtasks.exe"
 
-task_scheduler = windows.system.task_scheduler
+task_scheduler = pfw_windows.system.task_scheduler
 
 def do_schtasks(*args):
     return subprocess.check_output([SCHTASKS] + list(args))
@@ -51,9 +51,9 @@ def test_list_simple_task(sheduled_task):
     # taskname = os.path.basename(sheduled_task)
     print(sheduled_task)
     if sheduled_task["DIR"]:
-        tdir = windows.system.task_scheduler(sheduled_task["DIR"])
+        tdir = pfw_windows.system.task_scheduler(sheduled_task["DIR"])
     else:
-        tdir = windows.system.task_scheduler.root
+        tdir = pfw_windows.system.task_scheduler.root
     task = tdir[sheduled_task["NAME"]]
     assert task.name == sheduled_task["NAME"]
     triggers = task.definition.triggers
@@ -68,14 +68,14 @@ def test_list_simple_task(sheduled_task):
 
 @pytest.mark.parametrize("taskdict", SCHEDULED_TASK_PARAMS)
 def test_create_delete_task(taskdict):
-    tsched = tdir = windows.system.task_scheduler
+    tsched = tdir = pfw_windows.system.task_scheduler
     # Check task does not exists
     assert not schtasks_task_exists(os.path.join(taskdict["DIR"], taskdict["NAME"]))
     # Create Task
     if taskdict["DIR"]:
-        tdir = windows.system.task_scheduler.root.create_folder(taskdict["DIR"])
+        tdir = pfw_windows.system.task_scheduler.root.create_folder(taskdict["DIR"])
     else:
-        tdir = windows.system.task_scheduler.root
+        tdir = pfw_windows.system.task_scheduler.root
     ntd = tsched.create()
     actions = ntd.actions
     nea = actions.create(gdef.TASK_ACTION_EXEC)
@@ -87,6 +87,6 @@ def test_create_delete_task(taskdict):
     # Delete task
     del tdir[taskdict["NAME"]]
     if taskdict["DIR"]:
-        tdir = windows.system.task_scheduler.root.delete_folder(taskdict["DIR"])
+        tdir = pfw_windows.system.task_scheduler.root.delete_folder(taskdict["DIR"])
 
 # Test COM tasks ?

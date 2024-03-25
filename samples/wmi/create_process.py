@@ -1,8 +1,8 @@
 import time
-import windows
+import pfw_windows
 
 
-wmispace = windows.system.wmi["root\\cimv2"]
+wmispace = pfw_windows.system.wmi["root\\cimv2"]
 print("WMI namespace is <{0}>".format(wmispace))
 proc_class = wmispace.get_object("Win32_process")
 print("Process class is {0}".format(proc_class))
@@ -23,7 +23,7 @@ outparam = wmispace.exec_method(proc_class, "Create", inparam)
 
 print("OutParams is {0}".format(outparam))
 print("Out params values are: {0}".format(outparam.properties))
-target = windows.WinProcess(pid=int(outparam["ProcessId"]))
+target = pfw_windows.WinProcess(pid=int(outparam["ProcessId"]))
 print("Created process is {0}".format(target))
 print("Waiting 1s")
 time.sleep(1)

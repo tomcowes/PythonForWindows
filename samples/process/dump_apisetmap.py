@@ -1,8 +1,8 @@
 import argparse
-import windows
+import pfw_windows
 
 def read_apisetmap():
-    cp = windows.current_process
+    cp = pfw_windows.current_process
     apisetmap_addr = cp.peb.ApiSetMap
     print("ApiSetMap address <{0:#x}>".format(apisetmap_addr))
     apisetmap_version = cp.read_dword(apisetmap_addr)

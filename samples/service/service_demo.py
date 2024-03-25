@@ -1,14 +1,14 @@
-import windows
-import windows.generated_def as gdef
+import pfw_windows
+import pfw_windows.generated_def as gdef
 
 print("Listing the first 3 services:")
-for service in windows.system.services[:3]:
+for service in pfw_windows.system.services[:3]:
     print(" * {0}".format(service))
 print("")
 
 TARGET_SERVICE = b"TapiSrv"
 print("Retriving service <{0}>".format(TARGET_SERVICE))
-service = windows.system.services[TARGET_SERVICE]
+service = pfw_windows.system.services[TARGET_SERVICE]
 print("{0}".format(service))
 print(" - name: {0!r}".format(service.name))
 print(" - description: {0!r}".format(service.description))

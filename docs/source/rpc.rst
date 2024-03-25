@@ -40,7 +40,7 @@ Example:
 
 .. code-block:: python
 
-    >>> import windows.rpc
+    >>> import pfw_windows.rpc
     >>> UAC_UIID = "201ef99a-7fa0-444c-9399-19ba84f12a1a"
     >>> windows.rpc.find_alpc_endpoints(UAC_UIID)
     [UnpackTower(protseq='ncalrpc',
@@ -59,7 +59,7 @@ Example:
 
 .. code-block:: python
 
-    >>> import windows.rpc
+    >>> import pfw_windows.rpc
     >>> UAC_UIID = "201ef99a-7fa0-444c-9399-19ba84f12a1a"
     >>> client = windows.rpc.find_alpc_endpoint_and_connect(UAC_UIID)
     >>> client
@@ -88,7 +88,7 @@ Each NDR class has a function :func:`pack`.
 
 .. code-block:: python
 
-    >>> import windows.generated_def as gdef
+    >>> import pfw_windows.generated_def as gdef
     >>> sid = windows.utils.get_known_sid(gdef.WinLocalSystemSid)
     >>> sid
     c_void_p(78304040)
@@ -103,7 +103,7 @@ Each NDR class has a function :func:`pack`.
 
 .. code-block:: python
 
-    >>> from windows.rpc import ndr
+    >>> from pfw_windows.rpc import ndr
     >>> x = ndr.NdrWString.pack("Test-String\x00")
     >>> x
     '\x0c\x00\x00\x00\x00\x00\x00\x00\x0c\x00\x00\x00T\x00e\x00s\x00t\x00-\x00S\x00t\x00r\x00i\x00n\x00g\x00\x00\x00'
@@ -114,7 +114,7 @@ Each NDR class has a function :func:`pack`.
 
 .. code-block:: python
 
-    >>> from windows.rpc import ndr
+    >>> from pfw_windows.rpc import ndr
     >>> x = ndr.NdrCString.pack("Test-String\x00")
     >>> x
     '\x0c\x00\x00\x00\x00\x00\x00\x00\x0c\x00\x00\x00Test-String\x00'
@@ -124,7 +124,7 @@ Each NDR class has a function :func:`pack`.
 
 .. code-block:: python
 
-    >>> from windows.rpc import ndr
+    >>> from pfw_windows.rpc import ndr
     >>> x = ndr.NdrLong.pack(0x01020304)
     >>> x
     '\x04\x03\x02\x01'
@@ -135,7 +135,7 @@ Each NDR class has a function :func:`pack`.
 
 .. code-block:: python
 
-    >>> from windows.rpc import ndr
+    >>> from pfw_windows.rpc import ndr
     >>> x = ndr.NdrHyper.pack(0x0102030405060708)
     >>> x
     '\x08\x07\x06\x05\x04\x03\x02\x01'
@@ -144,7 +144,7 @@ Each NDR class has a function :func:`pack`.
 
 .. autoclass:: NdrShort
 
-    >>> from windows.rpc import ndr
+    >>> from pfw_windows.rpc import ndr
     >>> x = ndr.NdrShort.pack(0x0102)
     >>> x
     '\x02\x01'
@@ -155,7 +155,7 @@ Each NDR class has a function :func:`pack`.
 
 .. code-block:: python
 
-    >>> from windows.rpc import ndr
+    >>> from pfw_windows.rpc import ndr
     >>> x = ndr.NdrByte.pack(0x42)
     >>> x
     'B'
@@ -167,7 +167,7 @@ Each NDR class has a function :func:`pack`.
 
 .. code-block:: python
 
-    >>> from windows.rpc import ndr
+    >>> from pfw_windows.rpc import ndr
     >>> ndr.NdrLong.pack(0x11111111)
     '\x11\x11\x11\x11'
     >>> ndr.NdrUniquePTR(ndr.NdrLong).pack(0x11111111)
@@ -195,7 +195,7 @@ Each NDR class has a function :func:`pack`.
 
 .. code-block:: python
 
-    >>> from windows.rpc import ndr
+    >>> from pfw_windows.rpc import ndr
     >>> class NDRTest(ndr.NdrStructure):
     ...     MEMBERS = [ndr.NdrLong, ndr.NdrLong, ndr.NdrWString]
     ...
@@ -216,7 +216,7 @@ NDR STREAM
 
 .. code-block:: python
 
-    >>> from windows.rpc import ndr
+    >>> from pfw_windows.rpc import ndr
     >>> x = ndr.NdrStream("AAAABBBBCCCC")
     >>> hex(ndr.NdrLong.unpack(x))
     '0x41414141'

@@ -59,7 +59,7 @@ All those operations are also available for the `current_process`.
 You can also make some operation on threads (suspend/resume/wait/get(or set) context/ kill)
 
 ```python
->>> import windows
+>>> import pfw_windows
 >>> windows.current_process.bitness
 32
 >>> windows.current_process.token.integrity
@@ -135,7 +135,7 @@ A wrapper around some Windows functions. Arguments name and order are the same,
 but some have default values and the functions raise exception on call error (I don't like `if` around all my call).
 
 ```python
->>> import windows
+>>> import pfw_windows
 >>> help(windows.winproxy.VirtualAlloc)
 # Help on function VirtualAlloc in module windows.winproxy:
 # VirtualAlloc(lpAddress=0, dwSize=NeededParameter, flAllocationType=MEM_COMMIT(0x1000L), flProtect=PAGE_EXECUTE_READWRITE(0x40L))
@@ -185,7 +185,7 @@ PythonForWindows allows you to create native function callable from Python (than
 a simple x86/x64 assembler.
 
 ```python
->>> import windows.native_exec.simple_x86 as x86
+>>> import pfw_windows.native_exec.simple_x86 as x86
 >>> code = x86.MultipleInstr()
 >>> code += x86.Mov("EAX", 41)
 >>> code += x86.Inc("EAX")
@@ -206,8 +206,8 @@ a simple x86/x64 assembler.
 Objects easing access to some information about ``Token`` and ``SecurityDescriptor`` are also available.
 
 ```python
->>> import windows.security
->>> import windows.generated_def as gdef
+>>> import pfw_windows.security
+>>> import pfw_windows.generated_def as gdef
 >>> tok = windows.current_process.token
 >>> tok
 <Token TokenId=0x6a2b4550 Type=TokenPrimary(0x1)>
@@ -239,7 +239,7 @@ SECURITY_MANDATORY_MEDIUM_RID(0x2000)
 To easily script some signature check script, PythonForWindows implements some wrapper functions around ``wintrust.dll``
 
 ```python
->>> import windows.wintrust
+>>> import pfw_windows.wintrust
 >>> windows.wintrust.is_signed(r"C:\Windows\system32\ntdll.dll")
 True
 >>> windows.wintrust.is_signed(r"C:\Windows\system32\python27.dll")
@@ -257,7 +257,7 @@ SignatureData(signed=False, catalog=None, catalogsigned=False, additionalinfo=TR
 To extract/play with even more information about the system, PythonForWindows is able to perform WMI request.
 
 ```python
->>> import windows
+>>> import pfw_windows
 >>> windows.system.wmi.select
 <bound method WmiNamespace.select of <WmiNamespace "root\cimv2">>
 >>> windows.system.wmi.select("Win32_Process")[:3]
@@ -274,8 +274,8 @@ u'svchost.exe'
 The project also contains some wrapping classes around `_winreg` for simpler use.
 
 ```python
->>> import windows
->>> from windows.generated_def import KEY_WRITE, KEY_READ, REG_QWORD
+>>> import pfw_windows
+>>> from pfw_windows.generated_def import KEY_WRITE, KEY_READ, REG_QWORD
 >>> registry = windows.system.registry
 >>> cuuser_software = registry(r'HKEY_CURRENT_USER\Software')
 >>> cuuser_software
@@ -386,7 +386,7 @@ Classes around **A**dvanced **L**ocal **P**rocedure **C**all (**ALPC**) syscalls
 write client and server able to send **ALPC** messages.
 
 ```python
->>> import windows.alpc
+>>> import pfw_windows.alpc
 # Test server juste reply to each message with "REQUEST '{msg_data}' RECEIVED"
 >>> client = windows.alpc.AlpcClient(r"\RPC Control\PythonForWindowsTESTPORT")
 >>> response = client.send_receive("Hello world !")
@@ -409,8 +409,8 @@ An RPC-Client based using **ALPC** communication is also integred
 #   Method 1 -> int Add(int a, int b) -> return a + b
 # This Test server is a real RPC Server using rpcrt4.dll and compiled with VS2015.
 
->>> import windows.rpc
->>> from windows.rpc import ndr
+>>> import pfw_windows.rpc
+>>> from pfw_windows.rpc import ndr
 >>> client = windows.rpc.RPCClient(r"\RPC Control\HelloRpc")
 >>> client
 <windows.rpc.client.RPCClient object at 0x0411E130>
@@ -432,13 +432,13 @@ A sample with the **U**ser **A**ccount **C**ontrol (**UAC**) and one with `lsasr
 PythonForWindows provides a standard debugger to debug other processes.
 
 ```python
-import windows
-import windows.debug
-import windows.test
-import windows.native_exec.simple_x86 as x86
-import windows.generated_def as gdef
+import pfw_windows
+import pfw_windows.debug
+import pfw_windows.test
+import pfw_windows.native_exec.simple_x86 as x86
+import pfw_windows.generated_def as gdef
 
-from windows.test import pop_proc_32
+from pfw_windows.test import pop_proc_32
 
 class MyDebugger(windows.debug.Debugger):
     def on_exception(self, exception):
@@ -475,9 +475,9 @@ You can also debug your own process (or debug a process by injection) via the Lo
 The LocalDebugger is an abstraction around Vectored Exception Handler (VEH)
 
 ```python
-import windows
-from windows.generated_def.winstructs import *
-import windows.native_exec.simple_x86 as x86
+import pfw_windows
+from pfw_windows.generated_def.winstructs import *
+import pfw_windows.native_exec.simple_x86 as x86
 
 class SingleSteppingDebugger(windows.debug.LocalDebugger):
     SINGLE_STEP_COUNT = 4

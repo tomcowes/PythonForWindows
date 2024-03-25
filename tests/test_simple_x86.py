@@ -5,11 +5,11 @@ except ImportError as e:
 
 import pytest
 
-import windows.native_exec.simple_x86 as x86
-from windows.native_exec.simple_x86 import *
+import pfw_windows.native_exec.simple_x86 as x86
+from pfw_windows.native_exec.simple_x86 import *
 del Test # Prevent pytest warning
 
-from windows.pycompat import int_types
+from pfw_windows.pycompat import int_types
 
 VERBOSE = False
 

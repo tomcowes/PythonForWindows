@@ -1,14 +1,14 @@
-import windows.security
+import pfw_windows.security
 
 SDDL = "O:BAG:AND:(A;OI;RPWPCCDCLCSWRCWDWOGA;;;S-1-0-0)(D;CIIO;RPWPCCDCLCSWRCWDWOGA;;;S-1-0-0)"
 
-sd = windows.security.SecurityDescriptor.from_string(SDDL)
+sd = pfw_windows.security.SecurityDescriptor.from_string(SDDL)
 print("Security descriptor is: {0}".format(sd))
 
 print("Owner: {0}".format(sd.owner))
-print("  - lookup: {0}".format(windows.utils.lookup_sid(sd.owner)))
+print("  - lookup: {0}".format(pfw_windows.utils.lookup_sid(sd.owner)))
 print("Group: {0}".format(sd.group))
-print("  - lookup: {0}".format(windows.utils.lookup_sid(sd.group)))
+print("  - lookup: {0}".format(pfw_windows.utils.lookup_sid(sd.group)))
 
 dacl = sd.dacl
 print("Dacl: {0}".format(dacl))

@@ -2,13 +2,13 @@ import sys
 import os.path
 sys.path.append(os.path.abspath(__file__ + "\..\.."))
 
-import windows
-import windows.native_exec.simple_x86 as x86
-import windows.native_exec.simple_x64 as x64
+import pfw_windows
+import pfw_windows.native_exec.simple_x86 as x86
+import pfw_windows.native_exec.simple_x64 as x64
 # Here is our current process
-cp = windows.current_process
+cp = pfw_windows.current_process
 
-print("current process is {cp}".format(cp=windows.current_process))
+print("current process is {cp}".format(cp=pfw_windows.current_process))
 print("current process is a <{cp.bitness}> bits process".format(cp=cp))
 print("current process is a SysWow64 process ? <{cp.is_wow_64}>".format(cp=cp))
 print("current process pid <{cp.pid}>  and ppid <{cp.ppid}>".format(cp=cp))
@@ -16,7 +16,7 @@ print("Here are the current process threads: <{cp.threads}>".format(cp=cp))
 
 print("Let's execute some native code ! (0x41 + 1)")
 
-if windows.current_process.bitness == 32:
+if pfw_windows.current_process.bitness == 32:
     # Let's generate some native code
     code =  x86.MultipleInstr()
     code += x86.Mov("Eax", 0x41)
@@ -30,7 +30,7 @@ else:
 
 native_code = code.get_code()
 
-v = windows.current_process.execute(native_code)
+v = pfw_windows.current_process.execute(native_code)
 print("Native code returned <{0}>".format(hex(v)))
 
 print("Allocating memory in current process")

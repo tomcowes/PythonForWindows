@@ -1,6 +1,6 @@
 import hashlib
 import base64
-import windows.crypto
+import pfw_windows.crypto
 
 windowscert = b"""-----BEGIN CERTIFICATE-----
 MIIFBDCCA+ygAwIBAgITMwAAAQZuwyXEMckYDgAAAAABBjANBgkqhkiG9w0BAQsF
@@ -34,7 +34,7 @@ l2ec6CyjDQc6HcQBNCsbJVq6qGtQbYNE+ih+KhIU4tO5jf25xthf2g==
 
 
 raw_cert = base64.decodestring(b"".join(windowscert.split(b"\n")[1:-1]))
-cert = windows.crypto.Certificate.from_buffer(raw_cert)
+cert = pfw_windows.crypto.Certificate.from_buffer(raw_cert)
 
 print("Analysing certificate: {0}".format(cert))
 print("    * name: <{0}>".format(cert.name))
@@ -56,7 +56,7 @@ for i, chain in enumerate(chains):
 print ("")
 cert_to_verif = ccert
 print("Looking for <{0}> in trusted certificates".format(cert_to_verif.name))
-root_store = windows.crypto.CertificateStore.from_system_store("Root")
+root_store = pfw_windows.crypto.CertificateStore.from_system_store("Root")
 # This is not the correct way verify the validity of a certificate chain.
 # I would say that if the goal is to verify the signature of the certificate: use wintrust.
 # (or maybe CertVerifyCertificateChainPolicy : https://msdn.microsoft.com/en-us/library/windows/desktop/aa377163(v=vs.85).aspx)
@@ -74,7 +74,7 @@ print ("")
 print ("== PE Analysis ==")
 TARGET_FILE = r"C:\windows\system32\ntdll.dll"
 print("Target sha1 = <{0}>".format(hashlib.sha1(open(TARGET_FILE, "rb").read()).hexdigest()))
-cryptobj = windows.crypto.CryptObject(TARGET_FILE)
+cryptobj = pfw_windows.crypto.CryptObject(TARGET_FILE)
 print("Analysing {0}".format(cryptobj))
 print("File has {0} signer(s):".format(cryptobj.crypt_msg.nb_signer))
 for i, signer in enumerate(cryptobj.crypt_msg.signers):

@@ -1,9 +1,9 @@
 import argparse
 
-import windows
-import windows.generated_def as gdef
+import pfw_windows
+import pfw_windows.generated_def as gdef
 
-devmgr = windows.system.device_manager
+devmgr = pfw_windows.system.device_manager
 
 def class_generator(filter=None):
     for cls in devmgr.classes:

@@ -1,5 +1,5 @@
-import windows.rpc
-from windows.rpc import ndr
+import pfw_windows.rpc
+from pfw_windows.rpc import ndr
 
 
 class PLSAPR_OBJECT_ATTRIBUTES(ndr.NdrStructure):
@@ -76,7 +76,7 @@ class LSAPR_PRIVILEGE_ENUM_BUFFER(object):
 # Actual code
 
 ## LSASS alpc endpoints is fixed, no need for the epmapper
-client = windows.rpc.RPCClient(r"\RPC Control\lsasspirpc")
+client = pfw_windows.rpc.RPCClient(r"\RPC Control\lsasspirpc")
 ## Bind to the desired interface
 iid = client.bind('12345778-1234-abcd-ef00-0123456789ab', version=(0,0))
 

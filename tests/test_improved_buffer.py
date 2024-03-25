@@ -1,7 +1,7 @@
 import ctypes
 
-import windows.utils as utils
-import windows.generated_def as gdef
+import pfw_windows.utils as utils
+import pfw_windows.generated_def as gdef
 
 from .pfwtest import *
 
@@ -32,12 +32,12 @@ def test_improved_buffer(params, expected_type, expected_size):
 (gdef.DWORD, b"1111222233334444", 4),
 ])
 def test_partial_buffer_size_guess(c_type, buffer, expected_size):
-    buf = windows.utils.BUFFER(c_type).from_buffer_copy(buffer)
+    buf = pfw_windows.utils.BUFFER(c_type).from_buffer_copy(buffer)
     assert len(buf) == expected_size
 
 
 def test_partial_buffer_string_call():
-    buffer = windows.utils.BUFFER(gdef.WCHAR)("LOL")
+    buffer = pfw_windows.utils.BUFFER(gdef.WCHAR)("LOL")
     assert buffer[:] == "LOL"
     assert len(buffer) == 3
 

@@ -394,7 +394,7 @@ def miss_ref(app, env, node, contnode):
 
     res = docutils.nodes.reference("", "")
     py_domain = env.domains["py"]
-    full_name = "windows.generated_def.winstructs.{0}".format(node["reftarget"].rsplit(".", 1)[-1])
+    full_name = "pfw_windows.generated_def.winstructs.{0}".format(node["reftarget"].rsplit(".", 1)[-1])
     t = [x for x in py_domain.get_objects() if full_name == x[0]][0]
     res["refdocname"] = node["refdoc"]
     res.append(contnode)

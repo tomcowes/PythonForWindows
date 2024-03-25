@@ -179,7 +179,7 @@ Reading memory : &lt;&#39;SOME STUFF\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00&#39
 <span class="c1"># Make &#39;windows&#39; importable in remote python</span>
 <span class="n">notepad</span><span class="o">.</span><span class="n">execute_python</span><span class="p">(</span><span class="s2">&quot;import sys; sys.path.append(r&#39;</span><span class="si">{0}</span><span class="s2">&#39;)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
 
-<span class="n">notepad</span><span class="o">.</span><span class="n">execute_python</span><span class="p">(</span><span class="s2">&quot;import windows&quot;</span><span class="p">)</span>
+<span class="n">notepad</span><span class="o">.</span><span class="n">execute_python</span><span class="p">(</span><span class="s2">&quot;import pfw_windows&quot;</span><span class="p">)</span>
 <span class="c1"># Let&#39;s write in the notepad &#39;current_process&#39; memory :)</span>
 <span class="n">notepad</span><span class="o">.</span><span class="n">execute_python</span><span class="p">(</span><span class="s2">&quot;addr = </span><span class="si">{addr}</span><span class="s2">; windows.current_process.write_memory(addr, &#39;HELLO FROM notepad&#39;)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">addr</span><span class="o">=</span><span class="n">addr</span><span class="p">))</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Reading allocated memory : &lt;</span><span class="si">{0}</span><span class="s2">&gt;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">notepad</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span><span class="n">addr</span><span class="p">,</span> <span class="mi">20</span><span class="p">))))</span>
@@ -1519,12 +1519,12 @@ Namespace(clsfilter=&#39;Display&#39;, no_print_devices=False, print_resources=T
 <span class="kn">from</span> <span class="nn">windows.generated_def.winstructs</span> <span class="kn">import</span> <span class="o">*</span>
 
 <span class="n">python_code</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">import windows</span>
+<span class="s2">import pfw_windows</span>
 <span class="s2">import ctypes</span>
-<span class="s2">import windows</span>
-<span class="s2">from windows.winobject.exception import VectoredException</span>
-<span class="s2">import windows.generated_def.windef as windef</span>
-<span class="s2">from windows.generated_def.winstructs import *</span>
+<span class="s2">import pfw_windows</span>
+<span class="s2">from pfw_windows.winobject.exception import VectoredException</span>
+<span class="s2">import pfw_windows.generated_def.windef as windef</span>
+<span class="s2">from pfw_windows.generated_def.winstructs import *</span>
 
 <span class="s2">windows.utils.create_console()</span>
 
@@ -2438,8 +2438,8 @@ Done!
 <span class="kn">from</span> <span class="nn">windows.generated_def.winstructs</span> <span class="kn">import</span> <span class="o">*</span>
 
 <span class="n">remote_code</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">import windows</span>
-<span class="s2">from windows.generated_def.winstructs import *</span>
+<span class="s2">import pfw_windows</span>
+<span class="s2">from pfw_windows.generated_def.winstructs import *</span>
 
 <span class="s2">windows.utils.create_console()</span>
 
@@ -3977,7 +3977,7 @@ BYE
 <span class="n">PIPE_NAME</span> <span class="o">=</span> <span class="s2">&quot;PFW_Pipe&quot;</span>
 
 <span class="n">rcode</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">import windows</span>
+<span class="s2">import pfw_windows</span>
 
 <span class="s2">f = open(&#39;tst.txt&#39;, &quot;w+&quot;)</span>
 <span class="s2">fh = windows.utils.get_handle_from_file(f)</span>

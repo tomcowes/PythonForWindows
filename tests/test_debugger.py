@@ -3,11 +3,11 @@ import textwrap
 import ctypes
 import os
 
-import windows
-import windows.debug
-import windows.generated_def as gdef
-import windows.native_exec.simple_x86 as x86
-import windows.native_exec.simple_x64 as x64
+import pfw_windows
+import pfw_windows.debug
+import pfw_windows.generated_def as gdef
+import pfw_windows.native_exec.simple_x86 as x86
+import pfw_windows.native_exec.simple_x64 as x64
 
 from .conftest import generate_pop_and_exit_fixtures, pop_proc_32, pop_proc_64
 from .pfwtest import *
@@ -30,7 +30,7 @@ DEFAULT_DEBUGGER_TIMEOUT = 10
 @pytest.mark.timeout(DEFAULT_DEBUGGER_TIMEOUT)
 def test_init_breakpoint_callback(proc32_64_debug):
     """Checking that the initial breakpoint call `on_exception`"""
-    class MyDbg(windows.debug.Debugger):
+    class MyDbg(pfw_windows.debug.Debugger):
         def on_exception(self, exception):
             assert exception.ExceptionRecord.ExceptionCode == gdef.EXCEPTION_BREAKPOINT
             self.current_process.exit()
@@ -42,13 +42,13 @@ def test_init_breakpoint_callback(proc32_64_debug):
 def get_debug_process_ndll(proc):
     proc_pc = proc.threads[0].context.pc
     ntdll_addr = proc.query_memory(proc_pc).AllocationBase
-    return windows.pe_parse.GetPEFile(ntdll_addr, target=proc)
+    return pfw_windows.pe_parse.GetPEFile(ntdll_addr, target=proc)
 
 
 @pytest.mark.timeout(DEFAULT_DEBUGGER_TIMEOUT)
 def test_simple_standard_breakpoint(proc32_64_debug):
     """Check that a standard Breakpoint method `trigger` is called with the correct informations"""
-    class TSTBP(windows.debug.Breakpoint):
+    class TSTBP(pfw_windows.debug.Breakpoint):
         def trigger(self, dbg, exc):
             assert dbg.current_process.pid == proc32_64_debug.pid
             assert dbg.current_process.read_memory(self.addr, 1) ==  b"\xcc"
@@ -56,7 +56,7 @@ def test_simple_standard_breakpoint(proc32_64_debug):
             d.current_process.exit()
 
     LdrLoadDll = get_debug_process_ndll(proc32_64_debug).exports["LdrLoadDll"]
-    d = windows.debug.Debugger(proc32_64_debug)
+    d = pfw_windows.debug.Debugger(proc32_64_debug)
     d.add_bp(TSTBP(LdrLoadDll))
     d.loop()
 
@@ -64,7 +64,7 @@ def test_simple_standard_breakpoint(proc32_64_debug):
 def test_simple_hwx_breakpoint(proc32_64_debug):
     """Test that simple HXBP are trigger"""
 
-    class TSTBP(windows.debug.HXBreakpoint):
+    class TSTBP(pfw_windows.debug.HXBreakpoint):
         def trigger(self, dbg, exc):
             assert dbg.current_process.pid ==  proc32_64_debug.pid
             assert dbg.current_thread.context.pc ==  self.addr
@@ -72,7 +72,7 @@ def test_simple_hwx_breakpoint(proc32_64_debug):
             d.current_process.exit()
 
     LdrLoadDll = get_debug_process_ndll(proc32_64_debug).exports["LdrLoadDll"]
-    d = windows.debug.Debugger(proc32_64_debug)
+    d = pfw_windows.debug.Debugger(proc32_64_debug)
     d.add_bp(TSTBP(LdrLoadDll))
     d.loop()
 
@@ -80,7 +80,7 @@ def test_simple_hwx_breakpoint(proc32_64_debug):
 @pytest.mark.timeout(DEFAULT_DEBUGGER_TIMEOUT)
 def test_multiple_hwx_breakpoint(proc32_64_debug):
     """Checking that multiple succesives HXBP are properly triggered"""
-    class TSTBP(windows.debug.HXBreakpoint):
+    class TSTBP(pfw_windows.debug.HXBreakpoint):
         COUNTER = 0
         def __init__(self, addr, expec_before):
             self.addr = addr
@@ -96,7 +96,7 @@ def test_multiple_hwx_breakpoint(proc32_64_debug):
             if TSTBP.COUNTER == 4:
                 d.current_process.exit()
 
-    d = windows.debug.Debugger(proc32_64_debug)
+    d = pfw_windows.debug.Debugger(proc32_64_debug)
     addr = proc32_64_debug.virtual_alloc(0x1000)
     proc32_64_debug.write_memory(addr, "\x90" * 8)
     d.add_bp(TSTBP(addr, 0))
@@ -113,7 +113,7 @@ def test_multiple_hwx_breakpoint(proc32_64_debug):
 def test_four_hwx_breakpoint_fail(proc32_64_debug):
     """Check that setting 4HXBP in the same thread fails"""
     # print("test_four_hwx_breakpoint_fail {0}".format(proc32_64_debug))
-    class TSTBP(windows.debug.HXBreakpoint):
+    class TSTBP(pfw_windows.debug.HXBreakpoint):
         def __init__(self, addr, expec_before):
             self.addr = addr
             self.expec_before = expec_before
@@ -121,7 +121,7 @@ def test_four_hwx_breakpoint_fail(proc32_64_debug):
         def trigger(self, dbg, exc):
             raise NotImplementedError("Should fail before")
 
-    d = windows.debug.Debugger(proc32_64_debug)
+    d = pfw_windows.debug.Debugger(proc32_64_debug)
     addr = proc32_64_debug.virtual_alloc(0x1000)
     proc32_64_debug.write_memory(addr, "\x90" * 8 + "\xc3")
     d.add_bp(TSTBP(addr, 0))
@@ -139,12 +139,12 @@ def test_four_hwx_breakpoint_fail(proc32_64_debug):
 @pytest.mark.timeout(DEFAULT_DEBUGGER_TIMEOUT)
 def test_hwx_breakpoint_are_on_all_thread(proc32_64_debug):
     """Checking that HXBP without target are set on all threads"""
-    class MyDbg(windows.debug.Debugger):
+    class MyDbg(pfw_windows.debug.Debugger):
         def on_create_thread(self, exception):
             # Check that later created thread have their HWX breakpoint :)
             assert self.current_thread.context.Dr7 != 0
 
-    class TSTBP(windows.debug.HXBreakpoint):
+    class TSTBP(pfw_windows.debug.HXBreakpoint):
         COUNTER = 0
         def __init__(self, addr, expec_before):
             self.addr = addr
@@ -172,7 +172,7 @@ def test_hwx_breakpoint_are_on_all_thread(proc32_64_debug):
 
 
 @pytest.mark.timeout(DEFAULT_DEBUGGER_TIMEOUT)
-@pytest.mark.parametrize("bptype", [windows.debug.Breakpoint, windows.debug.HXBreakpoint])
+@pytest.mark.parametrize("bptype", [pfw_windows.debug.Breakpoint, pfw_windows.debug.HXBreakpoint])
 def test_simple_breakpoint_name_addr(proc32_64_debug, bptype):
     """Check breakpoint address resolution for format dll!api"""
     class TSTBP(bptype):
@@ -186,7 +186,7 @@ def test_simple_breakpoint_name_addr(proc32_64_debug, bptype):
             TSTBP.COUNTER += 1
             d.current_process.exit()
 
-    d = windows.debug.Debugger(proc32_64_debug)
+    d = pfw_windows.debug.Debugger(proc32_64_debug)
     d.add_bp(TSTBP("ntdll!LdrLoadDll"))
     d.loop()
     assert TSTBP.COUNTER == 1
@@ -196,7 +196,7 @@ from . import dbg_injection
 @pytest.mark.timeout(DEFAULT_DEBUGGER_TIMEOUT)
 def test_hardware_breakpoint_name_addr(proc32_64_debug):
     """Check that name addr in HXBP are trigger in all threads"""
-    class TSTBP(windows.debug.HXBreakpoint):
+    class TSTBP(pfw_windows.debug.HXBreakpoint):
         COUNTER = 0
         def trigger(self, dbg, exc):
             addr = exc.ExceptionRecord.ExceptionAddress
@@ -213,7 +213,7 @@ def test_hardware_breakpoint_name_addr(proc32_64_debug):
                     assert t.context.Dr7 != 0
                 d.current_process.exit()
 
-    d = windows.debug.Debugger(proc32_64_debug)
+    d = pfw_windows.debug.Debugger(proc32_64_debug)
     d.add_bp(TSTBP("ntdll!LdrLoadDll"))
     # Code that will load wintrust !
     d.loop()
@@ -222,7 +222,7 @@ def test_hardware_breakpoint_name_addr(proc32_64_debug):
 def test_single_step(proc32_64_debug):
     """Check that BP/dbg can trigger single step and that instruction follows"""
     NB_SINGLE_STEP = 3
-    class MyDbg(windows.debug.Debugger):
+    class MyDbg(pfw_windows.debug.Debugger):
         DATA = []
         def on_single_step(self, exception):
             # Check that later created thread have their HWX breakpoint :)
@@ -234,7 +234,7 @@ def test_single_step(proc32_64_debug):
             self.current_process.exit()
             return
 
-    class TSTBP(windows.debug.Breakpoint):
+    class TSTBP(pfw_windows.debug.Breakpoint):
         """Check that BP/dbg can trigger single step and that instruction follows"""
         def trigger(self, dbg, exc):
             return dbg.single_step()
@@ -251,11 +251,11 @@ def test_single_step(proc32_64_debug):
         assert MyDbg.DATA[i] == addr + 1 + i
 
 @pytest.mark.timeout(DEFAULT_DEBUGGER_TIMEOUT)
-@pytest.mark.parametrize("bptype", [windows.debug.Breakpoint, windows.debug.HXBreakpoint])
+@pytest.mark.parametrize("bptype", [pfw_windows.debug.Breakpoint, pfw_windows.debug.HXBreakpoint])
 def test_single_step_from_bp(proc32_64_debug, bptype):
     """Check that HXBPBP/dbg can trigger single step"""
     NB_SINGLE_STEP = 3
-    class MyDbg(windows.debug.Debugger):
+    class MyDbg(pfw_windows.debug.Debugger):
         DATA = []
         def on_single_step(self, exception):
             # Check that later created thread have their HWX breakpoint :)
@@ -267,7 +267,7 @@ def test_single_step_from_bp(proc32_64_debug, bptype):
             self.current_process.exit()
             return
 
-    # class TSTBP(windows.debug.HXBreakpoint):
+    # class TSTBP(pfw_windows.debug.HXBreakpoint):
     class TSTBP(bptype):
         """Check that BP/dbg can trigger single step and that instruction follows"""
         def trigger(self, dbg, exc):
@@ -290,7 +290,7 @@ def test_single_step_from_bp(proc32_64_debug, bptype):
 @pytest.mark.timeout(DEFAULT_DEBUGGER_TIMEOUT)
 def test_memory_breakpoint_write(proc32_64_debug):
     """Check MemoryBP WRITE"""
-    class TSTBP(windows.debug.MemoryBreakpoint):
+    class TSTBP(pfw_windows.debug.MemoryBreakpoint):
         #DEFAULT_PROTECT = PAGE_READONLY
         #DEFAULT_PROTECT = PAGE_READONLY
         DEFAULT_EVENTS = "W"
@@ -311,7 +311,7 @@ def test_memory_breakpoint_write(proc32_64_debug):
     else:
         asm, reg = (x64, "RAX")
 
-    d = windows.debug.Debugger(proc32_64_debug)
+    d = pfw_windows.debug.Debugger(proc32_64_debug)
     addr = proc32_64_debug.virtual_alloc(0x1000)
     data = proc32_64_debug.virtual_alloc(0x1000)
 
@@ -339,7 +339,7 @@ def test_memory_breakpoint_exec(proc32_64_debug):
     """Check MemoryBP EXEC"""
     NB_NOP_IN_PAGE = 3
 
-    class TSTBP(windows.debug.MemoryBreakpoint):
+    class TSTBP(pfw_windows.debug.MemoryBreakpoint):
         """Check that BP/dbg can trigger single step and that instruction follows"""
         #DEFAULT_PROTECT = PAGE_NOACCESS
         DEFAULT_EVENTS = "X"
@@ -350,7 +350,7 @@ def test_memory_breakpoint_exec(proc32_64_debug):
             if len(TSTBP.DATA) == NB_NOP_IN_PAGE + 1:
                 dbg.current_process.exit()
 
-    d = windows.debug.Debugger(proc32_64_debug)
+    d = pfw_windows.debug.Debugger(proc32_64_debug)
     addr = proc32_64_debug.virtual_alloc(0x1000)
     proc32_64_debug.write_memory(addr, "\x90" * NB_NOP_IN_PAGE + "\xc3")
     d.add_bp(TSTBP(addr, size=0x1000))
@@ -367,7 +367,7 @@ import threading
 
 @pytest.mark.timeout(DEFAULT_DEBUGGER_TIMEOUT)
 @python_injection
-@pytest.mark.parametrize("bptype", [windows.debug.FunctionParamDumpHXBP, windows.debug.FunctionParamDumpBP])
+@pytest.mark.parametrize("bptype", [pfw_windows.debug.FunctionParamDumpHXBP, pfw_windows.debug.FunctionParamDumpBP])
 def test_standard_breakpoint_self_remove(proc32_64_debug, bptype):
     data = set()
 
@@ -378,7 +378,7 @@ def test_standard_breakpoint_self_remove(proc32_64_debug, bptype):
         proc32_64_debug.exit()
 
     class TSTBP(bptype):
-        TARGET = windows.winproxy.CreateFileW
+        TARGET = pfw_windows.winproxy.CreateFileW
         def trigger(self, dbg, exc):
             addr = exc.ExceptionRecord.ExceptionAddress
             ctx = dbg.current_thread.context
@@ -387,7 +387,7 @@ def test_standard_breakpoint_self_remove(proc32_64_debug, bptype):
             if filename == u"FILENAME2":
                 dbg.del_bp(self)
 
-    d = windows.debug.Debugger(proc32_64_debug)
+    d = pfw_windows.debug.Debugger(proc32_64_debug)
     d.add_bp(TSTBP("kernelbase!CreateFileW"))
     threading.Thread(target=do_check).start()
     d.loop()
@@ -396,7 +396,7 @@ def test_standard_breakpoint_self_remove(proc32_64_debug, bptype):
 
 @pytest.mark.timeout(DEFAULT_DEBUGGER_TIMEOUT)
 @python_injection
-@pytest.mark.parametrize("bptype", [windows.debug.FunctionParamDumpHXBP, windows.debug.FunctionParamDumpBP])
+@pytest.mark.parametrize("bptype", [pfw_windows.debug.FunctionParamDumpHXBP, pfw_windows.debug.FunctionParamDumpBP])
 def test_standard_breakpoint_remove(proc32_64_debug, bptype):
     data = set()
 
@@ -408,14 +408,14 @@ def test_standard_breakpoint_remove(proc32_64_debug, bptype):
         proc32_64_debug.exit()
 
     class TSTBP(bptype):
-        TARGET = windows.winproxy.CreateFileW
+        TARGET = pfw_windows.winproxy.CreateFileW
         def trigger(self, dbg, exc):
             addr = exc.ExceptionRecord.ExceptionAddress
             ctx = dbg.current_thread.context
             filename = self.extract_arguments(dbg.current_process, dbg.current_thread)["lpFileName"]
             data.add(filename)
 
-    d = windows.debug.Debugger(proc32_64_debug)
+    d = pfw_windows.debug.Debugger(proc32_64_debug)
     the_bp = TSTBP("kernelbase!CreateFileW")
     # import pdb;pdb.set_trace()
     d.add_bp(the_bp)
@@ -467,7 +467,7 @@ def test_mem_breakpoint_remove(proc32_64_debug):
         proc32_64_debug.execute(generate_read_at(data_addr + 8)).wait()
         proc32_64_debug.exit()
 
-    class TSTBP(windows.debug.MemoryBreakpoint):
+    class TSTBP(pfw_windows.debug.MemoryBreakpoint):
         #DEFAULT_PROTECT = PAGE_NOACCESS
         DEFAULT_EVENTS = "RWX"
         def trigger(self, dbg, exc):
@@ -475,7 +475,7 @@ def test_mem_breakpoint_remove(proc32_64_debug):
             fault_addr = exc.ExceptionRecord.ExceptionInformation[1]
             data.append(fault_addr)
 
-    d = windows.debug.Debugger(proc32_64_debug)
+    d = pfw_windows.debug.Debugger(proc32_64_debug)
     data_addr = proc32_64_debug.virtual_alloc(0x1000)
     the_bp = TSTBP(data_addr, size=0x1000)
     d.add_bp(the_bp)
@@ -494,7 +494,7 @@ def test_mem_breakpoint_self_remove(proc32_64_debug):
         proc32_64_debug.execute(generate_read_at(data_addr + 8)).wait()
         proc32_64_debug.exit()
 
-    class TSTBP(windows.debug.MemoryBreakpoint):
+    class TSTBP(pfw_windows.debug.MemoryBreakpoint):
         #DEFAULT_PROTECT = PAGE_NOACCESS
         DEFAULT_EVENTS = "RWX"
         def trigger(self, dbg, exc):
@@ -504,7 +504,7 @@ def test_mem_breakpoint_self_remove(proc32_64_debug):
             if fault_addr == data_addr + 4:
                 dbg.del_bp(self)
 
-    d = windows.debug.Debugger(proc32_64_debug)
+    d = pfw_windows.debug.Debugger(proc32_64_debug)
     data_addr = proc32_64_debug.virtual_alloc(0x1000)
     the_bp = TSTBP(data_addr, size=0x1000)
     d.add_bp(the_bp)
@@ -526,7 +526,7 @@ def test_read_write_bp_same_page(proc32_64_debug):
         proc32_64_debug.execute(generate_write_at(data_addr + 0x504)).wait()
         proc32_64_debug.exit()
 
-    class MemBP(windows.debug.MemoryBreakpoint):
+    class MemBP(pfw_windows.debug.MemoryBreakpoint):
         #DEFAULT_PROTECT = PAGE_NOACCESS
         DEFAULT_EVENTS = "RWX"
         def trigger(self, dbg, exc):
@@ -535,7 +535,7 @@ def test_read_write_bp_same_page(proc32_64_debug):
             #print("Got <{0:#x}> <{1}>".format(fault_addr, exc.ExceptionRecord.ExceptionInformation[0]))
             data.append((self, fault_addr))
 
-    d = windows.debug.Debugger(proc32_64_debug)
+    d = pfw_windows.debug.Debugger(proc32_64_debug)
     data_addr = proc32_64_debug.virtual_alloc(0x1000)
     the_write_bp = MemBP(data_addr + 0x500, size=0x500, events="W")
     the_read_bp = MemBP(data_addr, size=0x500, events="RW")
@@ -552,7 +552,7 @@ def test_read_write_bp_same_page(proc32_64_debug):
 
 @pytest.mark.timeout(DEFAULT_DEBUGGER_TIMEOUT)
 def test_exe_in_module_list(proc32_64_debug):
-    class MyDbg(windows.debug.Debugger):
+    class MyDbg(pfw_windows.debug.Debugger):
         def on_exception(self, exception):
             exename = os.path.basename(proc32_64_debug.peb.imagepath.str)
             assert exename.endswith(".exe")
@@ -566,7 +566,7 @@ def test_exe_in_module_list(proc32_64_debug):
 
 @pytest.mark.timeout(DEFAULT_DEBUGGER_TIMEOUT)
 def test_bp_exe_by_name(proc32_64_debug):
-    class TSTBP(windows.debug.Breakpoint):
+    class TSTBP(pfw_windows.debug.Breakpoint):
         COUNTER = 0
         def trigger(self, dbg, exc):
             TSTBP.COUNTER += 1
@@ -581,7 +581,7 @@ def test_bp_exe_by_name(proc32_64_debug):
     exename = os.path.basename(proc32_64_debug.peb.imagepath.str)
     assert exename.endswith(".exe")
     exename = exename[:-len(".exe")] # Remove the .exe from the module name
-    d = windows.debug.Debugger(proc32_64_debug)
+    d = pfw_windows.debug.Debugger(proc32_64_debug)
     # The goal is to test bp of format 'exename!offset' so we craft a string based on the entrypoint
     d.add_bp(TSTBP("{name}!{offset}".format(name=exename, offset=entrypoint)))
     d.loop()
@@ -590,12 +590,12 @@ def test_bp_exe_by_name(proc32_64_debug):
 
 @pytest.mark.timeout(DEFAULT_DEBUGGER_TIMEOUT)
 def test_keyboardinterrupt_when_bp_event(proc32_64_debug, monkeypatch):
-    class ShouldNotTrigger(windows.debug.Breakpoint):
+    class ShouldNotTrigger(pfw_windows.debug.Breakpoint):
         COUNTER = 0
         def trigger(self, dbg, exc):
             raise ValueError("This BP should not trigger in this test !")
 
-    real_WaitForDebugEvent = windows.winproxy.WaitForDebugEvent
+    real_WaitForDebugEvent = pfw_windows.winproxy.WaitForDebugEvent
 
     def WaitForDebugEvent_KeyboardInterrupt(debug_event):
         real_WaitForDebugEvent(debug_event)
@@ -608,14 +608,14 @@ def test_keyboardinterrupt_when_bp_event(proc32_64_debug, monkeypatch):
             # Trigger the fake Ctrl+c
             raise KeyboardInterrupt("TEST BP")
 
-    xx = monkeypatch.setattr(windows.winproxy, "WaitForDebugEvent", WaitForDebugEvent_KeyboardInterrupt)
+    xx = monkeypatch.setattr(pfw_windows.winproxy, "WaitForDebugEvent", WaitForDebugEvent_KeyboardInterrupt)
 
     # This should emultate a ctrl+c on when waiting for the event
     # Our goal is to set the target back to a good state :)
     TEST_CODE = b"\xeb\xfe\xff\xff\xff\xff\xff" # Loop + invalid instr
     addr = proc32_64_debug.virtual_alloc(0x1000)
     proc32_64_debug.write_memory(addr, TEST_CODE)
-    d = windows.debug.Debugger(proc32_64_debug)
+    d = pfw_windows.debug.Debugger(proc32_64_debug)
     bad_thread = proc32_64_debug.create_thread(addr, 0)
     d.add_bp(ShouldNotTrigger(addr))
     d.kill_on_exit(False)

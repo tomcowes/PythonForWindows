@@ -1,4 +1,4 @@
-import windows.generated_def as gdef
+import pfw_windows.generated_def as gdef
 
 def test_format_charactere_values():
     assert gdef.FC_ZERO == 0

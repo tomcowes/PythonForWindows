@@ -4,10 +4,10 @@ import pprint
 import threading
 sys.path.append(os.path.abspath(__file__ + "\..\.."))
 
-import windows
-import windows.test
-import windows.debug
-import windows.generated_def as gdef
+import pfw_windows
+import pfw_windows.test
+import pfw_windows.debug
+import pfw_windows.generated_def as gdef
 
 # The debugge python will just print the result of
 # 3 call to IsDebuggerPresent
@@ -25,7 +25,7 @@ print(\'[DEBUGGE] IsDebuggerPresent={0}\'.format(IsDebuggerPresent()));\
 # This breakpoint now nothing about its target argument
 # It only now how to break at the return of the function
 # This allow us to change the return value of any function
-class IncrementReturnValue(windows.debug.FunctionCallBP):
+class IncrementReturnValue(pfw_windows.debug.FunctionCallBP):
     def __init__(self, addr, initialvalue):
         super(IncrementReturnValue, self).__init__(addr)
         self.initialvalue = initialvalue
@@ -43,7 +43,7 @@ class IncrementReturnValue(windows.debug.FunctionCallBP):
         dbg.current_thread.set_context(ctx)
         self.initialvalue += 1
 
-d = windows.debug.Debugger.debug(sys.executable, [sys.executable, "-c", TARGET_PYTHON_CODE])
+d = pfw_windows.debug.Debugger.debug(sys.executable, [sys.executable, "-c", TARGET_PYTHON_CODE])
 # We could also give the direct address of the function
 # But it would require to wait for the module to be loaded
 d.add_bp(IncrementReturnValue("kernelbase!IsDebuggerPresent", 42))

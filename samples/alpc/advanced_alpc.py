@@ -1,9 +1,9 @@
 import sys
 import multiprocessing
 
-import windows.alpc
-from windows.generated_def import LPC_CONNECTION_REQUEST, LPC_REQUEST
-import windows.generated_def as gdef
+import pfw_windows.alpc
+from pfw_windows.generated_def import LPC_CONNECTION_REQUEST, LPC_REQUEST
+import pfw_windows.generated_def as gdef
 
 import ctypes
 import tempfile
@@ -13,8 +13,8 @@ PORT_CONTEXT = 0x11223344
 
 
 def full_alpc_server():
-    print("server pid = {0}".format(windows.current_process.pid))
-    server = windows.alpc.AlpcServer(PORT_NAME)
+    print("server pid = {0}".format(pfw_windows.current_process.pid))
+    server = pfw_windows.alpc.AlpcServer(PORT_NAME)
     print("[SERV] PORT <{0}> CREATED".format(PORT_NAME))
     msg = server.recv()
     print("[SERV] == Message received ==")
@@ -37,8 +37,8 @@ def full_alpc_server():
             print(" * view_is_valid <{0}>".format(msg.view_is_valid))
             if msg.view_is_valid:
                 print("   * message view attribute:")
-                windows.utils.print_ctypes_struct(msg.view_attribute, "       - VIEW", hexa=True)
-                view_data = windows.current_process.read_string(msg.view_attribute.ViewBase)
+                pfw_windows.utils.print_ctypes_struct(msg.view_attribute, "       - VIEW", hexa=True)
+                view_data = pfw_windows.current_process.read_string(msg.view_attribute.ViewBase)
                 print("   * Reading view content: <{0}>".format(view_data))
                 # Needed in Win7 - TODO: why is there a different behavior ?
                 msg.attributes.ValidAttributes -= gdef.ALPC_MESSAGE_VIEW_ATTRIBUTE
@@ -47,9 +47,9 @@ def full_alpc_server():
             if msg.handle_is_valid:
                 if msg.handle_attribute.Handle:
                     print("   * message handle attribute:")
-                    windows.utils.print_ctypes_struct(msg.handle_attribute, "       - HANDLE", hexa=True)
+                    pfw_windows.utils.print_ctypes_struct(msg.handle_attribute, "       - HANDLE", hexa=True)
                     if msg.handle_attribute.ObjectType == 1:
-                        f = windows.utils.create_file_from_handle(msg.handle_attribute.Handle)
+                        f = pfw_windows.utils.create_file_from_handle(msg.handle_attribute.Handle)
                         print("   - File: {0}".format(f))
                         print("   - content: <{0}>".format(f.read()))
                     else:
@@ -59,12 +59,12 @@ def full_alpc_server():
             print(" * context_is_valid <{0}>".format(msg.context_is_valid))
             if msg.context_is_valid:
                 print("   * message context attribute:")
-                windows.utils.print_ctypes_struct(msg.context_attribute, "     - CTX", hexa=True)
+                pfw_windows.utils.print_ctypes_struct(msg.context_attribute, "     - CTX", hexa=True)
 
             if msg.attributes.ValidAttributes & gdef.ALPC_MESSAGE_TOKEN_ATTRIBUTE:
                 print(" * message token attribute:")
                 token_struct = msg.attributes.get_attribute(gdef.ALPC_MESSAGE_TOKEN_ATTRIBUTE)
-                windows.utils.print_ctypes_struct(token_struct, "   - TOKEN", hexa=True)
+                pfw_windows.utils.print_ctypes_struct(token_struct, "   - TOKEN", hexa=True)
 
             # We can reply by to way:
             #    - Send the same message with modified data
@@ -86,10 +86,10 @@ def send_message_with_handle(client):
     f.seek(0)
 
     # New message with a Handle
-    msg = windows.alpc.AlpcMessage()
+    msg = pfw_windows.alpc.AlpcMessage()
     msg.attributes.ValidAttributes |= gdef.ALPC_MESSAGE_HANDLE_ATTRIBUTE
     msg.handle_attribute.Flags = gdef.ALPC_HANDLEFLG_DUPLICATE_SAME_ACCESS
-    msg.handle_attribute.Handle = windows.utils.get_handle_from_file(f)
+    msg.handle_attribute.Handle = pfw_windows.utils.get_handle_from_file(f)
     msg.handle_attribute.ObjectType = 0
     msg.handle_attribute.DesiredAccess = 0
     msg.data = b"some message with a file"
@@ -104,23 +104,23 @@ def send_message_with_view(client):
     view = client.map_section(section[0], 0x4000)
 
     # New message with a View
-    msg = windows.alpc.AlpcMessage(0x2000)
+    msg = pfw_windows.alpc.AlpcMessage(0x2000)
     msg.attributes.ValidAttributes |= gdef.ALPC_MESSAGE_VIEW_ATTRIBUTE
     msg.view_attribute.Flags = 0
     msg.view_attribute.ViewBase = view.ViewBase
     msg.view_attribute.SectionHandle = view.SectionHandle
     msg.view_attribute.ViewSize = 0x4000
     msg.data = b"some message with a view"
-    windows.current_process.write_memory(view.ViewBase, b"The content of the view :)\x00")
+    pfw_windows.current_process.write_memory(view.ViewBase, b"The content of the view :)\x00")
     client.send_receive(msg)
 
 def alpc_client():
-    print("Client pid = {0}".format(windows.current_process.pid))
-    client = windows.alpc.AlpcClient()
+    print("Client pid = {0}".format(pfw_windows.current_process.pid))
+    client = pfw_windows.alpc.AlpcClient()
 
     # You can create a non-connected AlpcClient and send a custom
     # 'AlpcMessage' for complexe alpc port connection.
-    connect_message = windows.alpc.AlpcMessage()
+    connect_message = pfw_windows.alpc.AlpcMessage()
     connect_message.data = b"Connection request client message"
     print("[CLIENT] == Connecting to port ==")
     connect_response = client.connect_to_port(PORT_NAME, connect_message)
@@ -130,7 +130,7 @@ def alpc_client():
     # AlpcMessage for complexe message.
     print("")
     print("[CLIENT] == Sending a message ==")
-    msg = windows.alpc.AlpcMessage()
+    msg = pfw_windows.alpc.AlpcMessage()
     msg.data = b"Complex Message 1"
     print(" * Sending Message <{0}>".format(msg.data.decode()))
     response = client.send_receive(msg)

@@ -1,12 +1,12 @@
 import sys
 import argparse
 
-import windows
-import windows.test
-import windows.debug as dbg
-import windows.native_exec.simple_x86 as x86
-import windows.native_exec.simple_x64 as x64
-from windows.generated_def import *
+import pfw_windows
+import pfw_windows.test
+import pfw_windows.debug as dbg
+import pfw_windows.native_exec.simple_x86 as x86
+import pfw_windows.native_exec.simple_x64 as x64
+from pfw_windows.generated_def import *
 
 
 def hexdump(string, start_addr=0):
@@ -152,7 +152,7 @@ class CodeTesteur(dbg.Debugger):
 
 def test_code_x86(code, regs=None, raw=False, steps=False, **kwargs):
     print("Testing x86 code")
-    process = windows.test.pop_proc_32(dwCreationFlags=DEBUG_PROCESS)
+    process = pfw_windows.test.pop_proc_32(dwCreationFlags=DEBUG_PROCESS)
     if raw:
         code = code.replace(" ", "").decode('hex')
     else:
@@ -174,9 +174,9 @@ def test_code_x86(code, regs=None, raw=False, steps=False, **kwargs):
 
 def test_code_x64(code, regs=None, raw=False, **kwargs):
     print("Testing x64 code")
-    if windows.current_process.bitness == 32:
+    if pfw_windows.current_process.bitness == 32:
         raise ValueError("Cannot debug a 64b process from 32b python")
-    process = windows.test.pop_proc_64(dwCreationFlags=DEBUG_PROCESS)
+    process = pfw_windows.test.pop_proc_64(dwCreationFlags=DEBUG_PROCESS)
     if raw:
         code = code.replace(" ", "").decode('hex')
     else:

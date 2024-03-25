@@ -41,8 +41,8 @@ Example
 
 .. code-block:: python
 
-    >>> import windows.generated_def
-    >>> import windows.generated_def as gdef
+    >>> import pfw_windows.generated_def
+    >>> import pfw_windows.generated_def as gdef
     >>> gdef
     <module 'windows.generated_def' from 'c:\users\hakril\documents\work\pythonforwindows\windows\generated_def\__init__.pyc'>
 

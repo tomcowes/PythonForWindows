@@ -2,10 +2,10 @@ import pytest
 import textwrap
 import ctypes
 
-import windows
-import windows.generated_def as gdef
-import windows.native_exec.simple_x86 as x86
-import windows.native_exec.simple_x64 as x64
+import pfw_windows
+import pfw_windows.generated_def as gdef
+import pfw_windows.native_exec.simple_x86 as x86
+import pfw_windows.native_exec.simple_x64 as x64
 
 try:
     import _winreg as winreg
@@ -17,17 +17,17 @@ from .pfwtest import *
 
 pytestmark = pytest.mark.usefixtures('check_for_gc_garbage')
 
-if windows.pycompat.is_py3:
+if pfw_windows.pycompat.is_py3:
     function_to_hook = "RegOpenKeyExW"
-    callback_type = windows.hooks.RegOpenKeyExWCallback
+    callback_type = pfw_windows.hooks.RegOpenKeyExWCallback
 else:
     function_to_hook = "RegOpenKeyExA"
-    callback_type = windows.hooks.RegOpenKeyExACallback
+    callback_type = pfw_windows.hooks.RegOpenKeyExACallback
 
 
 def test_self_iat_hook_success():
     """Test hook success in single(self) thread"""
-    pythondll_mod = [m for m in windows.current_process.peb.modules if m.name.startswith("python") and m.name.endswith(".dll")][0]
+    pythondll_mod = [m for m in pfw_windows.current_process.peb.modules if m.name.startswith("python") and m.name.endswith(".dll")][0]
     RegOpenKeyEx = [n for n in pythondll_mod.pe.imports['advapi32.dll'] if n.name == function_to_hook][0]
 
     hook_value = []
@@ -49,7 +49,7 @@ def test_self_iat_hook_success():
 
 def test_self_iat_hook_fail_return():
     """Test hook fail in single(self) thread"""
-    pythondll_mod = [m for m in windows.current_process.peb.modules if m.name.startswith("python") and m.name.endswith(".dll")][0]
+    pythondll_mod = [m for m in pfw_windows.current_process.peb.modules if m.name.startswith("python") and m.name.endswith(".dll")][0]
     RegOpenKeyEx = [n for n in pythondll_mod.pe.imports['advapi32.dll'] if n.name == function_to_hook][0]
 
     @callback_type
@@ -66,21 +66,21 @@ def test_self_iat_hook_fail_return():
 
 def test_self_iat_hook_multithread():
     """Test IAT hook in current process with multi thread trigger"""
-    cp = windows.current_process
+    cp = pfw_windows.current_process
     # Might change this to XP compat ?
     kernelbase_mod = [m for m in cp.peb.modules if m.name == "kernelbase.dll"][0]
     LdrLoadDll = [n for n in kernelbase_mod.pe.imports['ntdll.dll'] if n.name == "LdrLoadDll"][0]
 
     calling_thread = set([])
-    @windows.hooks.LdrLoadDllCallback
+    @pfw_windows.hooks.LdrLoadDllCallback
     def MyHook(*args, **kwargs):
-        calling_thread.add(windows.current_thread.tid)
+        calling_thread.add(pfw_windows.current_thread.tid)
         return kwargs["real_function"]()
 
     x = LdrLoadDll.set_hook(MyHook)
     # Trigger from local thread
     ctypes.WinDLL("kernel32.dll")
-    assert calling_thread == set([windows.current_thread.tid])
+    assert calling_thread == set([pfw_windows.current_thread.tid])
     # Trigger from another thread
     k32 = [m for m in cp.peb.modules if m.name == "kernel32.dll"][0]
     load_libraryA = k32.pe.exports["LoadLibraryA"]
@@ -95,26 +95,26 @@ def test_self_iat_hook_multithread():
 @python_injection
 @check_for_gc_garbage
 def test_remote_iat_hook(proc32_64):
-    proc32_64.execute_python("import windows")
-    proc32_64.execute_python("windows.utils.create_console()")
+    proc32_64.execute_python("import pfw_windows")
+    proc32_64.execute_python("pfw_windows.utils.create_console()")
 
     code = """
-    import windows.generated_def as gdef
+    import pfw_windows.generated_def as gdef
 
-    cp = windows.current_process
+    cp = pfw_windows.current_process
     kernelbase_mod = [m for m in cp.peb.modules if m.name == "kernelbase.dll"][0]
     LdrLoadDll = [n for n in kernelbase_mod.pe.imports['ntdll.dll'] if n.name == "LdrLoadDll"][0]
 
     calling_thread = set([])
-    hooking_thread = windows.current_thread.tid
-    @windows.hooks.LdrLoadDllCallback
+    hooking_thread = pfw_windows.current_thread.tid
+    @pfw_windows.hooks.LdrLoadDllCallback
     def MyHook(*args, **kwargs):
-        calling_thread.add(windows.current_thread.tid)
-        print(windows.current_thread.tid)
+        calling_thread.add(pfw_windows.current_thread.tid)
+        print(pfw_windows.current_thread.tid)
         return kwargs["real_function"]()
 
     x = LdrLoadDll.set_hook(MyHook)
-    print("Hooker = " + str(windows.current_thread.tid))
+    print("Hooker = " + str(pfw_windows.current_thread.tid))
     import ctypes
     try:
         ctypes.WinDLL("NOT_A_REAL_DLL")
@@ -131,12 +131,12 @@ def test_remote_iat_hook(proc32_64):
             import pdb;pdb.set_trace()
         return result
 
-    assert remote_ask("windows.current_thread.exit(len(calling_thread))") ==  1
-    assert remote_ask("windows.current_thread.exit(calling_thread == set([hooking_thread]))") == 1
+    assert remote_ask("pfw_windows.current_thread.exit(len(calling_thread))") ==  1
+    assert remote_ask("pfw_windows.current_thread.exit(calling_thread == set([hooking_thread]))") == 1
 
     # Trigger hook from another Python thread
     proc32_64.execute_python_unsafe("ctypes.WinDLL('ANOTHER_FAKE_DLL')").wait()
-    assert remote_ask("windows.current_thread.exit(len(calling_thread))") == 2
+    assert remote_ask("pfw_windows.current_thread.exit(len(calling_thread))") == 2
 
     # Trigger hook from a NONPython thread
     k32 = [m for m in proc32_64.peb.modules if m.name == "kernel32.dll"][0]
@@ -145,31 +145,31 @@ def test_remote_iat_hook(proc32_64):
         proc32_64.write_memory(addr, "DLLNOTFOUND.NOT_A_REAL_DLL" + "\x00")
         t = proc32_64.create_thread(load_libraryA, addr)
         t.wait()
-    assert remote_ask("windows.current_thread.exit(len(calling_thread))") == 3
+    assert remote_ask("pfw_windows.current_thread.exit(len(calling_thread))") == 3
 
 #@check_for_gc_garbage
 #def test_remote_iat_hook_64(self):
 #    with Calc64() as calc:
-#        calc.execute_python("import windows")
-#        calc.execute_python("windows.utils.create_console()")
+#        calc.execute_python("import pfw_windows")
+#        calc.execute_python("pfw_windows.utils.create_console()")
 #
 #        code = """
-#        import windows.generated_def as gdef
+#        import pfw_windows.generated_def as gdef
 #
-#        cp = windows.current_process
+#        cp = pfw_windows.current_process
 #        kernelbase_mod = [m for m in cp.peb.modules if m.name == "kernelbase.dll"][0]
 #        LdrLoadDll = [n for n in kernelbase_mod.pe.imports['ntdll.dll'] if n.name == "LdrLoadDll"][0]
 #
 #        calling_thread = set([])
-#        hooking_thread = windows.current_thread.tid
-#        @windows.hooks.Callback(*[gdef.PVOID] * 5)
+#        hooking_thread = pfw_windows.current_thread.tid
+#        @pfw_windows.hooks.Callback(*[gdef.PVOID] * 5)
 #        def MyHook(*args, **kwargs):
-#            calling_thread.add(windows.current_thread.tid)
-#            print(windows.current_thread.tid)
+#            calling_thread.add(pfw_windows.current_thread.tid)
+#            print(pfw_windows.current_thread.tid)
 #            return kwargs["real_function"]()
 #
 #        x = LdrLoadDll.set_hook(MyHook)
-#        print("Hooker = " + str(windows.current_thread.tid))
+#        print("Hooker = " + str(pfw_windows.current_thread.tid))
 #        import ctypes
 #        try:
 #            ctypes.WinDLL("NOT_A_REAL_DLL")
@@ -183,12 +183,12 @@ def test_remote_iat_hook(proc32_64):
 #            t.wait()
 #            return t.exit_code
 #
-#        self.assertEqual(remote_ask("windows.current_thread.exit(len(calling_thread))"), 1)
-#        self.assertEqual(remote_ask("windows.current_thread.exit(calling_thread == set([hooking_thread]))"), 1)
+#        self.assertEqual(remote_ask("pfw_windows.current_thread.exit(len(calling_thread))"), 1)
+#        self.assertEqual(remote_ask("pfw_windows.current_thread.exit(calling_thread == set([hooking_thread]))"), 1)
 #
 #        # Trigger hook from another Python thread
 #        calc.execute_python_unsafe("ctypes.WinDLL('ANOTHER_FAKE_DLL')").wait()
-#        self.assertEqual(remote_ask("windows.current_thread.exit(len(calling_thread))"), 2)
+#        self.assertEqual(remote_ask("pfw_windows.current_thread.exit(len(calling_thread))"), 2)
 #
 #        # Trigger hook from a NONPython thread
 #        k32 = [m for m in calc.peb.modules if m.name == "kernel32.dll"][0]
@@ -197,7 +197,7 @@ def test_remote_iat_hook(proc32_64):
 #            calc.write_memory(addr, "DLLNOTFOUND.NOT_A_REAL_DLL" + "\x00")
 #            t = calc.create_thread(load_libraryA, addr)
 #            t.wait()
-#        self.assertEqual(remote_ask("windows.current_thread.exit(len(calling_thread))"), 3)
+#        self.assertEqual(remote_ask("pfw_windows.current_thread.exit(len(calling_thread))"), 3)
 
 
 # TODO: test new hook API

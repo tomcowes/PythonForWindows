@@ -2,15 +2,15 @@ import sys
 import os.path
 sys.path.append(os.path.abspath(__file__ + "\..\.."))
 
-import windows
-import windows.native_exec.simple_x86 as x86
-import windows.native_exec.simple_x64 as x64
+import pfw_windows
+import pfw_windows.native_exec.simple_x86 as x86
+import pfw_windows.native_exec.simple_x64 as x64
 
 print("Creating a notepad") ## Replaced calc.exe by notepad.exe cause of windows 10.
-notepad = windows.utils.create_process(r"C:\windows\system32\notepad.exe")
+notepad = pfw_windows.utils.create_process(r"C:\windows\system32\notepad.exe")
 # You don't need to do that in our case, but it's useful to now
 print("Looking for notepads in the processes")
-all_notepads = [proc for proc in windows.system.processes if proc.name == "notepad.exe"]
+all_notepads = [proc for proc in pfw_windows.system.processes if proc.name == "notepad.exe"]
 print("They are currently <{0}> notepads running on the system".format(len(all_notepads)))
 
 print("Let's play with our notepad: <{notepad}>".format(notepad=notepad))
@@ -65,9 +65,9 @@ print("Executing python code !")
 # Make 'windows' importable in remote python
 notepad.execute_python("import sys; sys.path.append(r'{0}')".format(sys.path[-1]))
 
-notepad.execute_python("import windows")
+notepad.execute_python("import pfw_windows")
 # Let's write in the notepad 'current_process' memory :)
-notepad.execute_python("addr = {addr}; windows.current_process.write_memory(addr, 'HELLO FROM notepad')".format(addr=addr))
+notepad.execute_python("addr = {addr}; pfw_windows.current_process.write_memory(addr, 'HELLO FROM notepad')".format(addr=addr))
 print("Reading allocated memory : <{0}>".format(repr(notepad.read_memory(addr, 20))))
 
 # python_execute is 'safe':
@@ -77,7 +77,7 @@ print("Reading allocated memory : <{0}>".format(repr(notepad.read_memory(addr, 2
 try:
     print("Trying to import in remote module 'FAKE_MODULE'")
     notepad.execute_python("def func():\n   import FAKE_MODULE\nfunc()")
-except windows.injection.RemotePythonError as e:
+except pfw_windows.injection.RemotePythonError as e:
     print("Exception in remote process!")
     print(e)
 

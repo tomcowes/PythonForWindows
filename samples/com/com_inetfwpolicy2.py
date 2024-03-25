@@ -3,25 +3,25 @@ import os.path
 import pprint
 sys.path.append(os.path.abspath(__file__ + "\..\.."))
 
-import windows
-import windows.generated_def as gdef
-from windows.generated_def import interfaces
+import pfw_windows
+import pfw_windows.generated_def as gdef
+from pfw_windows.generated_def import interfaces
 
-# This code is a simple version of the firewall code in windows.winoject.network
+# This code is a simple version of the firewall code in pfw_windows.winoject.network
 print("Initialisation of COM")
-windows.com.init()
+pfw_windows.com.init()
 print("Creating INetFwPolicy2 variable")
 firewall = interfaces.INetFwPolicy2()
 print("{0} (value = {1})".format(firewall, firewall.value))
 print("")
 
 print("Generating CLSID")
-NetFwPolicy2CLSID = windows.com.IID.from_string("E2B3C97F-6AE1-41AC-817A-F6F92166D7DD")
+NetFwPolicy2CLSID = pfw_windows.com.IID.from_string("E2B3C97F-6AE1-41AC-817A-F6F92166D7DD")
 print(NetFwPolicy2CLSID)
 print("")
 
 print("Creating COM instance")
-windows.com.create_instance(NetFwPolicy2CLSID, firewall)
+pfw_windows.com.create_instance(NetFwPolicy2CLSID, firewall)
 print("{0} (value = 0x{1:0})".format(firewall, firewall.value))
 print("")
 

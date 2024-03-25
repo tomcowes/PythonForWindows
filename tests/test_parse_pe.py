@@ -2,7 +2,7 @@ import pytest
 import time
 import zlib
 import ctypes
-import windows
+import pfw_windows
 
 from .conftest import pop_proc_32, pop_proc_64
 from .pfwtest import *
@@ -11,7 +11,7 @@ from .pfwtest import *
 def pe(request):
     # Pe will be kernelbase.dll
     if request.param is None:
-        yield windows.current_process.peb.modules[2].pe
+        yield pfw_windows.current_process.peb.modules[2].pe
         return
 
     pop_proc = request.param
@@ -89,10 +89,10 @@ def test_pe_parsing_dotnet_32_current_process_64(proc64):
     PIPE_NAME = "PFW_TEST_Pipe"
     mod = proc64.load_library(r"C:\Windows\System32\stordiag.exe")
     assert proc64.peb.modules[-1].name == "stordiag.exe"
-    proc64.execute_python("import sys; import windows; import windows.pipe")
-    proc64.execute_python("""pemod = [x for x in windows.current_process.peb.modules if x.name == 'stordiag.exe'][0].pe""")
-    with windows.pipe.create(PIPE_NAME) as np:
-        rcode = """windows.pipe.send_object("{pipe}", (list(pemod.imports), [sec.name for sec in pemod.sections]))"""
+    proc64.execute_python("import sys; import pfw_windows; import pfw_windows.pipe")
+    proc64.execute_python("""pemod = [x for x in pfw_windows.current_process.peb.modules if x.name == 'stordiag.exe'][0].pe""")
+    with pfw_windows.pipe.create(PIPE_NAME) as np:
+        rcode = """pfw_windows.pipe.send_object("{pipe}", (list(pemod.imports), [sec.name for sec in pemod.sections]))"""
         proc64.execute_python(rcode.format(pipe=PIPE_NAME))
         imported_dlls, sections_names = np.recv()
         assert imported_dlls == ['mscoree.dll']

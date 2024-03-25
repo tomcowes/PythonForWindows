@@ -3,9 +3,9 @@ import os.path
 import pprint
 sys.path.append(os.path.abspath(__file__ + "\..\.."))
 
-import windows
+import pfw_windows
 
-registry = windows.system.registry
+registry = pfw_windows.system.registry
 print("Registry is <{0}>".format(registry))
 
 current_user = registry("HKEY_CURRENT_USER")

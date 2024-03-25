@@ -3,22 +3,22 @@ import os.path
 import pprint
 sys.path.append(os.path.abspath(__file__ + "\..\.."))
 
-import windows
-import windows.test
-import windows.debug
+import pfw_windows
+import pfw_windows.test
+import pfw_windows.debug
 
-from windows.generated_def.winstructs import *
+from pfw_windows.generated_def.winstructs import *
 
 
 
-class MyDebugger(windows.debug.Debugger):
+class MyDebugger(pfw_windows.debug.Debugger):
     def on_exception(self, exception):
         code = exception.ExceptionRecord.ExceptionCode
         addr = exception.ExceptionRecord.ExceptionAddress
         print("Got exception {0} at 0x{1:x}".format(code, addr))
 
 
-class PrintUnicodeString(windows.debug.Breakpoint):
+class PrintUnicodeString(pfw_windows.debug.Breakpoint):
     def __init__(self, addr, argument_position):
         super(PrintUnicodeString, self).__init__(addr)
         self.arg_pos = argument_position
@@ -39,7 +39,7 @@ class PrintUnicodeString(windows.debug.Breakpoint):
             dbg.current_process.exit()
 
 
-calc = windows.test.pop_proc_32(dwCreationFlags=DEBUG_PROCESS)
+calc = pfw_windows.test.pop_proc_32(dwCreationFlags=DEBUG_PROCESS)
 d = MyDebugger(calc)
 d.add_bp(PrintUnicodeString("ntdll!LdrLoadDll", argument_position=2))
 d.loop()

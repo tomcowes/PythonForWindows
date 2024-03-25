@@ -3,14 +3,14 @@ import os.path
 sys.path.append(os.path.abspath(__file__ + "\..\.."))
 
 import _winreg
-import windows
+import pfw_windows
 
 # Here is a demo of IAT hooking in python
 # We will hook the 'RegOpenKeyExA' entry of Python27.dll because it is easy to trigger !
 
 # First: let's create our hook
-# windows.hooks.RegOpenKeyExACallback is generated based on windows.generated_def.winfuncs
-@windows.hooks.RegOpenKeyExACallback
+# pfw_windows.hooks.RegOpenKeyExACallback is generated based on pfw_windows.generated_def.winfuncs
+@pfw_windows.hooks.RegOpenKeyExACallback
 def open_reg_hook(hKey, lpSubKey, ulOptions, samDesired, phkResult, real_function):
     print("<in hook> Hook called | hKey = {0} | lpSubKey = <{1}>".format(hex(hKey), lpSubKey.value))
     # Our hook can choose to call the real_function or not
@@ -27,7 +27,7 @@ def open_reg_hook(hKey, lpSubKey, ulOptions, samDesired, phkResult, real_functio
 
 
 # Get the peb of our process
-peb = windows.current_process.peb
+peb = pfw_windows.current_process.peb
 
 # Get the pythonxx.dll module
 pythondll_module = [m for m in peb.modules if m.name.startswith("python") and m.name.endswith(".dll")][0]

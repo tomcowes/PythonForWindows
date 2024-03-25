@@ -2,12 +2,12 @@ import sys
 import os.path
 sys.path.append(os.path.abspath(__file__ + "\..\.."))
 
-import windows
-import windows.native_exec.simple_x86 as x86
-import windows.native_exec.simple_x64 as x64
+import pfw_windows
+import pfw_windows.native_exec.simple_x86 as x86
+import pfw_windows.native_exec.simple_x64 as x64
 
 print("Creating a notepad") ## Replaced calc.exe by notepad.exe cause of windows 10.
-notepad = windows.utils.create_process(r"C:\windows\system32\notepad.exe")
+notepad = pfw_windows.utils.create_process(r"C:\windows\system32\notepad.exe")
 # You don't need to do that in our case, but it's useful to now
 
 print("Priting threads")

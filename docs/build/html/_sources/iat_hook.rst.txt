@@ -18,8 +18,8 @@ You just need to use the function :func:`windows.pe_parse.IATEntry.set_hook`
 
 Putting a hook::
 
-    import windows
-    from windows.hooks import *
+    import pfw_windows
+    from pfw_windows.hooks import *
 
     @CreateFileACallback
     def createfile_callback(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile, real_function):
@@ -77,7 +77,7 @@ There is (again) two ways to give those informations to your hook callback. Both
 
     * Giving the type manualy using the decorator :class:`windows.hooks.Callback`::
 
-        from windows.hooks import *
+        from pfw_windows.hooks import *
         # First type is return type, others are parameters types
         @Callback(ctypes.c_void_p, ctypes.c_ulong)
         def exit_callback(x, real_function):
@@ -89,7 +89,7 @@ There is (again) two ways to give those informations to your hook callback. Both
 
     * Using the `Callback` decorator generated from known functions::
 
-        from windows.hooks import *
+        from pfw_windows.hooks import *
         # Decorator name is always API_NAME + "CallBack"
         @CreateFileACallback
         def createfile_callback(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile, real_function):

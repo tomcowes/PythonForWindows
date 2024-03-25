@@ -2,10 +2,10 @@ import sys
 import os.path
 sys.path.append(os.path.abspath(__file__ + "\..\.."))
 
-import windows
-import windows.generated_def as gdef
+import pfw_windows
+import pfw_windows.generated_def as gdef
 
-object_manager = windows.system.object_manager
+object_manager = pfw_windows.system.object_manager
 print("Object manager is {0}".format(object_manager))
 root = object_manager.root
 print("Root object is {0}".format(root))

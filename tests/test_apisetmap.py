@@ -2,8 +2,8 @@ import sys
 import ctypes
 import pytest
 
-import windows.generated_def as gdef
-from windows.winobject.apisetmap import get_api_set_map_for_current_process
+import pfw_windows.generated_def as gdef
+from pfw_windows.winobject.apisetmap import get_api_set_map_for_current_process
 
 from .pfwtest import *
 
@@ -24,7 +24,7 @@ KNOWN_APISETMAP_PREFIX = ["api-", "ext-", "MS-Win-"]
 
 def verify_apisetmap_parsing(apisetmap_base, version=None):
     if version is not None:
-        assert windows.current_process.read_dword(apisetmap_base) == version
+        assert pfw_windows.current_process.read_dword(apisetmap_base) == version
     apisetmap = get_api_set_map_for_current_process(apisetmap_base)
     apisetmap_dict = apisetmap.resolution_dict
     # import pdb;pdb.set_trace()
@@ -40,7 +40,7 @@ def verify_apisetmap_parsing(apisetmap_base, version=None):
 
 
 def test_apisetmap_parsing_current_process():
-    return verify_apisetmap_parsing(windows.current_process.peb.ApiSetMap)
+    return verify_apisetmap_parsing(pfw_windows.current_process.peb.ApiSetMap)
 
 def test_apisetmap_parsing_from_dump(dumped_apisetmap_base_and_version):
     return verify_apisetmap_parsing(*dumped_apisetmap_base_and_version)

@@ -359,7 +359,7 @@ class DefineDocGenerator(NoTemplatedGenerator):
     DOCNAME = "WinDef"
 
     def copy_template(self):
-        self.emitline(".. currentmodule:: windows.generated_def")
+        self.emitline(".. currentmodule:: pfw_windows.generated_def")
         self.emitline("")
         self.emitline(self.DOCNAME)
         self.emitline("-" * len(self.DOCNAME))
@@ -381,7 +381,7 @@ class NtStatusCtypesGenerator(CtypesGenerator):
 
 class NtStatusDocGenerator(NoTemplatedGenerator):
     def copy_template(self):
-        self.emitline(".. currentmodule:: windows.generated_def")
+        self.emitline(".. currentmodule:: pfw_windows.generated_def")
         self.emitline("")
         self.emitline("Ntstatus")
         self.emitline("--------")
@@ -520,7 +520,7 @@ class StructureDocGenerator(NoTemplatedGenerator):
     STRUCT_NAME_SEPARATOR = "'"
 
     def copy_template(self):
-        self.emitline(".. module:: windows.generated_def.winstructs")
+        self.emitline(".. module:: pfw_windows.generated_def.winstructs")
         self.emitline("")
 
     def generate(self):

@@ -1,6 +1,6 @@
-import windows.debug
+import pfw_windows.debug
 
-class MySetupDebugger(windows.debug.Debugger):
+class MySetupDebugger(pfw_windows.debug.Debugger):
     def on_setup(self):
         super(MySetupDebugger, self).on_setup()
         print("Setup called: {0}".format(self.current_process))
@@ -11,7 +11,7 @@ class MySetupDebugger(windows.debug.Debugger):
     def on_exit_process(self, evt):
         print("Process exit: {0}".format(self.current_process))
 
-class SimpleDebugger(windows.debug.Debugger):
+class SimpleDebugger(pfw_windows.debug.Debugger):
     def on_exception(self, exc):
         print("Exception: {0}".format(exc.ExceptionRecord.ExceptionCode))
 

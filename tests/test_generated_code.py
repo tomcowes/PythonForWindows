@@ -1,8 +1,8 @@
 import pytest
 import pickle
 
-import windows
-import windows.generated_def as gdef
+import pfw_windows
+import pfw_windows.generated_def as gdef
 
 def _test_pickle_unpickle(obj, protocol=0):
     pickled = pickle.dumps(obj, protocol)

@@ -1,12 +1,12 @@
-import windows
-import windows.generated_def as gdef
-from windows import winproxy
+import pfw_windows
+import pfw_windows.generated_def as gdef
+from pfw_windows import winproxy
 
 # POC of ICallInterceptor
 # Based on works by Pavel Yosifovich
 # http://blogs.microsoft.co.il/pavely/2018/02/28/intercepting-com-objects-with-cogetinterceptor/
 
-windows.com.init()
+pfw_windows.com.init()
 
 # Create an interceptor for the firewall (INetFwPolicy2)
 interceptor = gdef.ICallInterceptor()
@@ -14,10 +14,10 @@ winproxy.CoGetInterceptor(gdef.INetFwPolicy2.IID, None, interceptor.IID, interce
 
 # The PythonForWindows firewall object is a real/valid INetFwPolicy2
 # used for demos of ICallFrameEvents.Invoke
-real_firewall = windows.system.network.firewall
+real_firewall = pfw_windows.system.network.firewall
 
 # Custom Python ICallFrameEvents implementation
-class MySink(windows.com.COMImplementation):
+class MySink(pfw_windows.com.COMImplementation):
     IMPLEMENT = gdef.ICallFrameEvents
 
     def OnCall(self, this, frame):
@@ -27,11 +27,11 @@ class MySink(windows.com.COMImplementation):
         frame.GetNames(ifname, methodname)
         print("Catching call to <{0}.{1}>".format(ifname.value, methodname.value))
         param0info = gdef.CALLFRAMEPARAMINFO()
-        param0 = windows.com.Variant()
+        param0 = pfw_windows.com.Variant()
         frame.GetParamInfo(0, param0info)
         frame.GetParam(0, param0)
         print("Info about parameters 0:")
-        windows.utils.sprint(param0info, name=" * param0info")
+        pfw_windows.utils.sprint(param0info, name=" * param0info")
         print("param0 value = {0}".format(param0.aslong))
         frame.Invoke(real_firewall)
         frame.SetReturnValue(1234)

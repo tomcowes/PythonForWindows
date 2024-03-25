@@ -1,9 +1,9 @@
 import argparse
 import os
 
-import windows
-import windows.debug
-import windows.test
+import pfw_windows
+import pfw_windows.debug
+import pfw_windows.test
 
 
 parser = argparse.ArgumentParser(prog=__file__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -18,7 +18,7 @@ else:
         print("Not dbghelp path given and no environ var 'PFW_DBGHELP_PATH' sample may fail")
 
 
-class MyInfoBP(windows.debug.Breakpoint):
+class MyInfoBP(pfw_windows.debug.Breakpoint):
     COUNT = 0
     def trigger(self, dbg, exc):
         cursym = dbg.current_resolver[exc.ExceptionRecord.ExceptionAddress]
@@ -30,7 +30,7 @@ class MyInfoBP(windows.debug.Breakpoint):
             dbg.current_process.exit()
         print("")
 
-dbg = windows.debug.SymbolDebugger.debug(b"c:\\windows\\system32\\notepad.exe")
+dbg = pfw_windows.debug.SymbolDebugger.debug(b"c:\\windows\\system32\\notepad.exe")
 dbg.add_bp(MyInfoBP("kernelbase!CreateFileInternal+2"))
 dbg.add_bp(MyInfoBP("ntdll!LdrpInitializeProcess"))
 dbg.loop()

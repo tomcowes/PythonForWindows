@@ -1,11 +1,11 @@
 import argparse
 import getpass
 
-import windows.crypto as crypto
-from windows import winproxy
-from windows.generated_def import *
+import pfw_windows.crypto as crypto
+from pfw_windows import winproxy
+from pfw_windows.generated_def import *
 
-import windows.crypto.generation as gencrypt
+import pfw_windows.crypto.generation as gencrypt
 
 # http://stackoverflow.com/questions/1461272/basic-questions-on-microsoft-cryptoapi
 

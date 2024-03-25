@@ -25,7 +25,7 @@ The :mod:`windows.native_exec` also contains some submodules:
 
 Demo::
 
-    >>> import windows.native_exec.cpuid
+    >>> import pfw_windows.native_exec.cpuid
     >>> windows.native_exec.cpuid.do_cpuid(0)
     <windows.native_exec.cpuid.X86CpuidResult object at 0x0330D990>
     >>> x = windows.native_exec.cpuid.do_cpuid(0)
@@ -78,7 +78,7 @@ The :class:`mem_access` object can be created:
 
 Instruction assembling::
 
-    >>> import windows.native_exec.simple_x86 as x86
+    >>> import pfw_windows.native_exec.simple_x86 as x86
     >>> import random
     >>> x86.Mov
     <class 'windows.native_exec.simple_x86.Mov'>
@@ -101,7 +101,7 @@ including jump and label via the :class:`MultipleInstr` class.
 
 Shellcode assembling::
 
-    import windows.native_exec.simple_x86 as x86
+    import pfw_windows.native_exec.simple_x86 as x86
 
     code = x86.MultipleInstr()
     code += x86.Label(":BEGIN")
@@ -229,7 +229,7 @@ The only things that change are:
 
 Demo::
 
-    >>> import windows.native_exec.simple_x64 as x64
+    >>> import pfw_windows.native_exec.simple_x64 as x64
     >>> x64.Mov("RAX", "R13").get_code()
     'L\x89\xe8'
     >>> x64.Mov("EAX", "EDI").get_code()

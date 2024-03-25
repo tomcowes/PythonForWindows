@@ -1,9 +1,9 @@
 import sys
 import argparse
 
-import windows
-import windows.generated_def as gdef
-import windows.generated_def.meta as meta
+import pfw_windows
+import pfw_windows.generated_def as gdef
+import pfw_windows.generated_def.meta as meta
 
 def match(s1, s2):
     # return s1 in s2
@@ -42,7 +42,7 @@ def search_name_in_winerror(target):
 
 def search_name_in_interface(target):
     for name, interface in meta.interfaces_walker():
-        if not issubclass(interface, windows.generated_def.interfaces.COMInterface):
+        if not issubclass(interface, pfw_windows.generated_def.interfaces.COMInterface):
             continue
         if match(target, name):
             print(name, interface)

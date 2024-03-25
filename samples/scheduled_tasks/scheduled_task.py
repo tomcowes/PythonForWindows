@@ -3,10 +3,10 @@ import os.path
 import pprint
 sys.path.append(os.path.abspath(__file__ + "\..\.."))
 
-import windows
-import windows.generated_def as gdef
+import pfw_windows
+import pfw_windows.generated_def as gdef
 
-tscheduler = windows.system.task_scheduler
+tscheduler = pfw_windows.system.task_scheduler
 print("Task scheduler is {0}".format(tscheduler))
 root = tscheduler.root
 print("Root folder is {0}".format(root))

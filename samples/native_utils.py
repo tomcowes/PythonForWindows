@@ -3,14 +3,14 @@ import os.path
 import pprint
 sys.path.append(os.path.abspath(__file__ + "\..\.."))
 
-import windows
-import windows.test
+import pfw_windows
+import pfw_windows.test
 
-import windows.native_exec.simple_x64 as x64
-import windows.native_exec.nativeutils
-from windows.generated_def.winstructs import *
+import pfw_windows.native_exec.simple_x64 as x64
+import pfw_windows.native_exec.nativeutils
+from pfw_windows.generated_def.winstructs import *
 
-GetProcAddress64 = windows.native_exec.nativeutils.GetProcAddress64
+GetProcAddress64 = pfw_windows.native_exec.nativeutils.GetProcAddress64
 
 dll = "KERNEL32.DLL\x00".encode("utf-16-le")
 api = "LoadLibraryA\x00"
@@ -36,7 +36,7 @@ c += x64.Ret()
 RemoteManualLoadLibray += GetProcAddress64
 
 
-calc = windows.test.pop_proc_64(dwCreationFlags=CREATE_SUSPENDED)
+calc = pfw_windows.test.pop_proc_64(dwCreationFlags=CREATE_SUSPENDED)
 addr = calc.virtual_alloc(0x1000)
 addr2 = addr + len(dll)
 addr3 = addr2 + len(api)
